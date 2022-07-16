@@ -335,7 +335,7 @@ fn main() {
             } else if keyboard_roll.contains("triples is best") {
                 println!("you rolled: \n {} {} {}", roll1, roll2, roll3);
                 turn_scores[i] += roll1 + roll2 + roll3;
-                println!("turn score: {}", turn_scores[i].bright_magenta())
+                println!("turn score: {}", turn_scores[i].bright_magenta());
             } else if keyboard_roll.contains("scoreboard") {
                 let mut s = 0;
                 loop {
@@ -486,7 +486,7 @@ fn main() {
         // reset turn loop back to player 1
         let p_num_minus_one = p_num - 1;
         if i == p_num_minus_one.try_into().unwrap() {
-            i *= 0
+            i *= 0;
         } else {
             i += 1;
         }
