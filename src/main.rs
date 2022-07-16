@@ -202,8 +202,8 @@ fn main() {
     let mut i: usize = 0;
     'game: loop {
         // call gen functions
-        let rp_index: usize = gen_prompt_num();
-        let ro_index: usize = gen_ro_prompt();
+        let prompt_idx: usize = gen_prompt_num();
+        let random_one_idx: usize = gen_ro_prompt();
         // turn score vec: returns to 0 after your turn is over
         // create new vec with vec![x; y]
         // x being the value, y being the amount
@@ -228,7 +228,7 @@ fn main() {
                 .bold()
                 .on_truecolor(150, 0, 100),
             pvec[i].score.underline().truecolor(150, 0, 100),
-            random_prompts[rp_index].cyan()
+            random_prompts[prompt_idx].cyan()
         );
 
         'turn: loop {
@@ -260,7 +260,7 @@ fn main() {
 
                 // rolling a 1
                 } else if roll1 == 1 || roll2 == 1 {
-                    println!("\n{}", random_ones[ro_index]);
+                    println!("\n{}", random_ones[random_one_idx]);
                     println!(
                         "{}, your total score is {}",
                         pvec[i].name.trim(),
