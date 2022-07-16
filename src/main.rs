@@ -22,12 +22,13 @@ struct Player {
     turn_count: i32,
 }
 
-// this takes the user input and creates a new Player type
-fn set_player(name: String) -> Player {
-    Player {
-        name,
-        score: 0,
-        turn_count: 0,
+impl Player {
+    fn new(name: String) -> Self {
+        Self {
+            name,
+            score: 0,
+            turn_count: 0,
+        }
     }
 }
 
@@ -149,7 +150,7 @@ fn main() {
         }
 
         // use set_player function with user input as the parameter
-        let player: Player = set_player(new_name);
+        let player = Player::new(new_name);
         // push each player in
         pvec.push(player);
 
