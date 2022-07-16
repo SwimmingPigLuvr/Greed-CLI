@@ -51,14 +51,19 @@ println!("{}",("         °@@@@@@@@@@@@@@@@@#°").bold());
 
     println!("\n\t{} {} {} {} {}", ("$").blink().green(), ("$").blink_fast().bright_green(), ("  G R E E D  ").bold().blink().bright_cyan(), ("$").blink_fast().bright_green(), ("$").blink().green());
     println!("{}", ("\n\n\nHOW TO PLAY").dimmed().bold());
-    println!("{}", ("\nPlayers take turns rolling dice,").on_truecolor(23, 23, 23));
-    println!("roll as many times as you desire");
-    println!("{}", ("if you roll a 1, your turn ends & you get no points").on_truecolor(23, 23, 23));
-    println!("if you roll doubles, those dice are doubled in value");
-    println!("{}", ("if you roll snake eyes, your turn ends & you lose all of your points").on_truecolor(23, 23, 23));
-    println!("\n{}", ("first player to 100 points wins").italic().yellow());
-
-
+    println!("{}", ("\nRoll the dice as many times as you want.").on_truecolor(23, 23, 23));
+    println!("Once you choose to end your turn then, your turn score is added to your total score.");
+    println!("{}", ("If you roll a 1, your turn ends and no points are added to your total score.").on_truecolor(23, 23, 23));
+    println!("If you roll doubles, those dice are doubled in value.");
+    println!("{}", ("If you roll SNAKE EYES, your turn ends and your total score is now 0.").on_truecolor(23, 23, 23));
+    println!("{}", ("Win by reaching 100 points.").italic().yellow());
+    println!("\n{}", ("All players get an equal amount of turns."));
+    println!("{}", ("If player 2 reaches 100 in 4 turns, then all following players get one last turn to get a higher score.").on_truecolor(23, 23, 23));
+    println!("Player 1 does not get to go again because they already had their 4th turn.");
+    println!("{}", ("If you reach 100 points, you may continue rolling to set a higher score to beat.").on_truecolor(23, 23, 23));
+    println!("\nGOOD LUCK, HAVE FUN");
+    println!("{}", ("\ntype 'roll' to roll").dimmed());
+    println!("{}", ("type 'scoreboard' to see score").dimmed());
     println!("{}", ("\nHow many players will be playing?").bright_blue());
     
     
@@ -79,8 +84,6 @@ println!("{}",("         °@@@@@@@@@@@@@@@@@#°").bold());
     // create empty vec to hold players
     let mut pvec: Vec<Player> = Vec::new();
 
-    println!("{}", ("\ntype 'roll' to roll").dimmed());
-    println!("{}", ("type 'scoreboard' to see score\n").dimmed());
     
     // loop through every number in 1 - pnum
     let mut i = 1;
