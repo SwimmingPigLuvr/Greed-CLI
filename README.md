@@ -2,7 +2,11 @@
 
 cli version of a fun simple dice game
 
+
+
 'cargo run' to start
+
+
 
 Roll the dice as many times as you want
 
