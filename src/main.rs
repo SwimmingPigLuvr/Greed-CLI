@@ -287,7 +287,7 @@ fn main() {
                     let binary = response.contains("y");
 
                     // yes
-                    if binary == true {
+                    if binary {
                         continue 'turn;
                     }
                     // no
@@ -316,7 +316,7 @@ fn main() {
                 let binary = response.contains("y");
 
                 // yes
-                if binary == true {
+                if binary {
                     continue 'turn;
                 }
                 // no
@@ -429,7 +429,7 @@ fn main() {
                                     .read_line(&mut yon)
                                     .expect("error can't read that");
                                 let noy: bool = yon.contains("y");
-                                if noy == true {
+                                if noy {
                                     continue 'final_turn;
                                 } else {
                                     v += 1;
@@ -453,7 +453,7 @@ fn main() {
                                         .read_line(&mut yon)
                                         .expect("error can't read that");
                                     let noy: bool = yon.contains("y");
-                                    if noy == true {
+                                    if noy {
                                         continue 'final_turn;
                                     } else {
                                         v += 1;
