@@ -1,4 +1,7 @@
 #![deny(clippy::pedantic)]
+#![allow(clippy::too_many_lines)]
+#![allow(clippy::redundant_else)]
+
 // use std::borrow::Borrow;
 // use std::cmp;
 use owo_colors::OwoColorize;
