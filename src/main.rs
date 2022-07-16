@@ -284,7 +284,7 @@ fn main() {
                     // go again?
                     let mut response = String::new();
                     io::stdin().read_line(&mut response).expect("can't read");
-                    let binary = response.contains("y");
+                    let binary = response.contains('y');
 
                     // yes
                     if binary {
@@ -313,7 +313,7 @@ fn main() {
                 println!("\nroll again? {}", ("[y,n]").on_bright_purple());
                 let mut response = String::new();
                 io::stdin().read_line(&mut response).expect("can't read");
-                let binary = response.contains("y");
+                let binary = response.contains('y');
 
                 // yes
                 if binary {
@@ -428,7 +428,7 @@ fn main() {
                                 io::stdin()
                                     .read_line(&mut yon)
                                     .expect("error can't read that");
-                                let noy: bool = yon.contains("y");
+                                let noy: bool = yon.contains('y');
                                 if noy {
                                     continue 'final_turn;
                                 } else {
@@ -452,7 +452,7 @@ fn main() {
                                     io::stdin()
                                         .read_line(&mut yon)
                                         .expect("error can't read that");
-                                    let noy: bool = yon.contains("y");
+                                    let noy: bool = yon.contains('y');
                                     if noy {
                                         continue 'final_turn;
                                     } else {
