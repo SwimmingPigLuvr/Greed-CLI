@@ -399,9 +399,7 @@ fn main() {
                             println!("You");
                             println!("rolled");
                             println!("...");
-                            println!("{} + {}", roll1.red().on_bright_white(), roll2)
-                                .red()
-                                .on_white();
+                            println!("{} + {}", roll1.red().on_bright_white(), roll2.red().on_white());
                             if roll1 == 1 && roll2 == 1 {
                                 println!(
                                     "wow {} you are very unlucky",
