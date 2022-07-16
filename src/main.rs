@@ -146,17 +146,12 @@ fn main() {
         );
         let mut new_name = String::new();
         io::stdin().read_line(&mut new_name).expect("cant read");
-        if new_name.contains("Bob") || new_name.contains("bob") {
-            println!("{}", ("~ B A N A N A ~").yellow());
-        } else if new_name.contains("Kevin") || new_name.contains("kevin") {
-            println!("{}", ("~ B A N A N A ~").yellow());
-        } else if new_name.contains("Stuart")
-            || new_name.contains("stuart")
-            || new_name.contains("Stu")
-            || new_name.contains("stu")
-        {
+
+        let names = ["Bob", "bob", "Kevin", "kevin", "Stuart", "stuart", "Stu", "stu"];
+        if names.contains(&new_name.trim()) {
             println!("{}", ("~ B A N A N A ~").yellow());
         }
+
         // use set_player function with user input as the parameter
         let player: Player = set_player(new_name);
         // push each player in
