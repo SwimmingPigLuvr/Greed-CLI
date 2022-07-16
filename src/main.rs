@@ -141,32 +141,32 @@ fn main() {
     }
 
     // vector of random prompts to spice it up
-    let mut random_prompts: Vec<String> = Vec::new();
-    random_prompts.push(String::from("HURRY UP AND ROLL"));
-    random_prompts.push(String::from("ROLL THEM SHITS, BITCH"));
-    random_prompts.push(String::from("ROLL THE DICE!!!"));
-    random_prompts.push(String::from("YOUR TURN"));
-    random_prompts.push(String::from(
+    let random_prompts = [
+        "HURRY UP AND ROLL",
+        "ROLL THEM SHITS, BITCH",
+        "ROLL THE DICE!!!",
+        "YOUR TURN",
         "*picks up dice...shakes vigorously...rolls them across the table",
-    ));
-    random_prompts.push(String::from("GOOD LUCK, HAVE FUN :)"));
-    random_prompts.push(String::from("DON'T BE GREEDY"));
-    random_prompts.push(String::from("YOU CAN DO IT!!!"));
-    random_prompts.push(String::from("your family is counting on you"));
-    random_prompts.push(String::from("please roll"));
-    random_prompts.push(String::from("your turn to roll now"));
-    random_prompts.push(String::from("right now it is your turn to roll now"));
-    random_prompts.push(String::from("ROLL THE VIRTUAL DICE"));
-    random_prompts.push(String::from("fucking roll already"));
-    random_prompts.push(String::from("please roll, milady"));
+        "GOOD LUCK, HAVE FUN :)",
+        "DON'T BE GREEDY",
+        "YOU CAN DO IT!!!",
+        "your family is counting on you",
+        "please roll",
+        "your turn to roll now",
+        "right now it is your turn to roll now",
+        "ROLL THE VIRTUAL DICE",
+        "fucking roll already",
+        "please roll, milady",
+    ];
 
     // random messages after rolling 1s
-    let mut random_ones: Vec<String> = Vec::new();
-    random_ones.push(String::from("you rolled a 1! no points for this turn"));
-    random_ones.push(String::from("get good nerd"));
-    random_ones.push(String::from("no points scored because you rolled a 1"));
-    random_ones.push(String::from("get rekt"));
-    random_ones.push(String::from("HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHA"));
+    let random_ones = [
+        "you rolled a 1! no points for this turn",
+        "get good nerd",
+        "no points scored because you rolled a 1",
+        "get rekt",
+        "HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHA",
+    ];
 
     // snake eyes
     // doubles
