@@ -2,7 +2,6 @@
 // use std::borrow::Borrow;
 // use std::cmp;
 use owo_colors::OwoColorize;
-use rand::prelude::ThreadRng;
 use rand::thread_rng;
 use rand::Rng;
 use std::io;
@@ -31,22 +30,16 @@ fn set_player(name: String) -> Player {
 
 // dice simulation
 fn dice_roll() -> i32 {
-    let mut rng = thread_rng();
-    let roll: i32 = rng.gen_range(1..7);
-    roll
+    thread_rng().gen_range(1..7)
 }
 
 // this generates a random number 0-14 because there are 15 random prompts
 fn gen_prompt_num() -> usize {
-    let mut prompt: ThreadRng = thread_rng();
-    let prompt_num: usize = prompt.gen_range(0..14);
-    prompt_num
+    thread_rng().gen_range(0..14)
 }
 // R.O. means random One
 fn gen_ro_prompt() -> usize {
-    let mut ro: ThreadRng = thread_rng();
-    let ro_num: usize = ro.gen_range(0..4);
-    ro_num
+    thread_rng().gen_range(0..4)
 }
 
 // fn gen_snake_msg
