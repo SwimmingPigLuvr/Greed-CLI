@@ -1,3 +1,4 @@
+#![deny(clippy::pedantic)]
 // use std::borrow::Borrow;
 // use std::cmp;
 use owo_colors::OwoColorize;
