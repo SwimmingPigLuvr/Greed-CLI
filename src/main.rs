@@ -5,7 +5,6 @@ use rand::prelude::ThreadRng;
 use rand::thread_rng;
 use rand::Rng;
 use owo_colors::OwoColorize;
-// use device_query::{DeviceQuery, DeviceState, MouseState, Keycode};
 
 // TO DO
 // evil dice: if triples is rolled then all other players are set back to 0,
