@@ -20,6 +20,50 @@ struct Player {
     turn_count: i32,
 }
 
+// this takes the user input and creates a new Player type
+fn set_player(name: String) -> Player {
+    Player {
+        name,
+        score: 0,
+        turn_count: 0,
+    }
+}
+
+// dice simulation
+fn dice_roll() -> i32 {
+    let mut rng = thread_rng();
+    let roll: i32 = rng.gen_range(1..7);
+    roll
+}
+
+// this generates a random number 0-14 because there are 15 random prompts
+fn gen_prompt_num() -> usize {
+    let mut prompt: ThreadRng = thread_rng();
+    let prompt_num: usize = prompt.gen_range(0..14);
+    prompt_num
+}
+// R.O. means random One
+fn gen_ro_prompt() -> usize {
+    let mut ro: ThreadRng = thread_rng();
+    let ro_num: usize = ro.gen_range(0..4);
+    ro_num
+}
+
+// fn gen_snake_msg
+// fn gen_doubles_msg
+
+// Using Closures that Capture Their Environment
+// https://doc.rust-lang.org/book/ch13-02-iterators.html
+
+// this function creates a vec of Players who have a certain turn_count left
+// use .filter method to find players who still have to have a final turn
+fn last_turns(players: Vec<Player>, turn_count: i32) -> Vec<Player> {
+    players
+        .into_iter()
+        .filter(|p| p.turn_count == turn_count)
+        .collect()
+}
+
 fn main() {
     // Game rules
     println!("\n\n");
@@ -79,15 +123,6 @@ fn main() {
     println!("{}", ("type 'scoreboard' to see score").dimmed());
     println!("{}", ("\nHow many players will be playing?").bright_blue());
 
-    // this takes the user input and creates a new Player type
-    fn set_player(name: String) -> Player {
-        Player {
-            name,
-            score: 0,
-            turn_count: 0,
-        }
-    }
-
     let mut p_string = String::new();
     io::stdin().read_line(&mut p_string).expect("cant read");
     // read_line will read the user input
@@ -133,13 +168,6 @@ fn main() {
         i += 1;
     }
 
-    // dice simulation
-    fn dice_roll() -> i32 {
-        let mut rng = thread_rng();
-        let roll: i32 = rng.gen_range(1..7);
-        roll
-    }
-
     // vector of random prompts to spice it up
     let random_prompts = [
         "HURRY UP AND ROLL",
@@ -170,34 +198,6 @@ fn main() {
 
     // snake eyes
     // doubles
-
-    // this generates a random number 0-14 because there are 15 random prompts
-    fn gen_prompt_num() -> usize {
-        let mut prompt: ThreadRng = thread_rng();
-        let prompt_num: usize = prompt.gen_range(0..14);
-        prompt_num
-    }
-    // R.O. means random One
-    fn gen_ro_prompt() -> usize {
-        let mut ro: ThreadRng = thread_rng();
-        let ro_num: usize = ro.gen_range(0..4);
-        ro_num
-    }
-
-    // fn gen_snake_msg
-    // fn gen_doubles_msg
-
-    // Using Closures that Capture Their Environment
-    // https://doc.rust-lang.org/book/ch13-02-iterators.html
-
-    // this function creates a vec of Players who have a certain turn_count left
-    // use .filter method to find players who still have to have a final turn
-    fn last_turns(players: Vec<Player>, turn_count: i32) -> Vec<Player> {
-        players
-            .into_iter()
-            .filter(|p| p.turn_count == turn_count)
-            .collect()
-    }
 
     let mut i: usize = 0;
     'game: loop {
