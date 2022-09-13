@@ -2,7 +2,7 @@ use owo_colors::OwoColorize;
 use rand::prelude::ThreadRng;
 use rand::thread_rng;
 use rand::Rng;
-use std::{io, thread, time::Duration};
+use std::io;
 
 
 // TO DO
