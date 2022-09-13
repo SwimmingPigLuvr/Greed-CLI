@@ -1,23 +1,9 @@
-// use std::borrow::Borrow;
-// use std::cmp;
 use owo_colors::OwoColorize;
 use rand::prelude::ThreadRng;
 use rand::thread_rng;
 use rand::Rng;
 use std::{io, thread, time::Duration};
-use tui::{
-    backend::CrosstermBackend,
-    layout::{Constraint, Direction, Layout},
-    widgets::{Block, Borders, Widget},
-    Terminal,
-};
-use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-};
 
-// use device_query::{DeviceQuery, DeviceState, MouseState, Keycode};
 
 // TO DO
 // evil dice: if triples is rolled then all other players are set back to 0,
