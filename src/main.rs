@@ -2,111 +2,123 @@ use owo_colors::OwoColorize;
 use rand::prelude::ThreadRng;
 use rand::thread_rng;
 use rand::Rng;
-use std::{io, thread, time::Duration};
+use std::collections::HashMap;
+use std::io;
 
-
-// TO DO
-// evil dice: if triples is rolled then all other players are set back to 0,
-// if one is rolled then turn score is 0, if triple 1's then player is banished
-
-// check score: checks all player scores
+// to do
+//
+// fix blank screen after rolling 1
+// scoreboard sort scoreboard
+// remind players how many points away they are
+//
+// create items?
+// type r to roll s to see score i to choose item
+//
+// fix end game
 
 #[derive(Debug, Clone)]
-struct Player {
+pub struct Player {
     name: String,
     score: i32,
     turn_count: i32,
+    items: Items,
+}
+
+impl Player {
+    fn print_scores(&self) {
+        println!("{} {}", self.name, self.score)
+    }
+}
+
+const TARGET: i32 = 100;
+
+
+#[derive(Debug, Clone)]
+pub enum Items {
+    /// roll dice values of 1-10
+    MegaDice,
+    /// roll 3 dice
+    TripleDice,
+    /// leech points from another player
+    LeechDice,
+    /// subtract from everyone elses scores, you gain no points
+    EvilDice,
+    /// chance to double or quadruple roll
+    EvenOddHighLow,
+    /// trade scores with another player
+    ScoreSwap,
+    /// yoink an item from player
+    Yoink,
+    /// empty
+    Empty,
 }
 
 pub fn print_milady() -> () {
     println!("\n\n");
-    println!("{}", ("         .*O@@@@@@@@@@#o*.").bold());
-    println!("{}", ("      *#@@@@@@@@@@@@@@@@@@#o.").bold());
-    println!("{}", ("     O@@@@@@@@@@@@@@@@@@@@@@#°").bold());
-    println!("{}", ("    *@@@@@@@@@@@@@@@@@@@@@@@@*").bold());
-    println!("{}", ("    *@@@@@@@@@@@@@@@@@@Oo.@@o").bold());
-    println!("{}", ("    °#@@@@@@@o   .@@@@@   ##.").bold());
-    println!("{}", ("    .O@@@@@@@#*  .@@@@@@O#@o").bold());
-    println!("{}", ("      .oO@@@@@@@@@@@@@@@@@o").bold());
-    println!("{}", ("           .*o#@@@@@@@@#*.").bold());
-    println!("{}", ("            *O@@@@@@@@@@O°").bold());
-    println!("{}", ("          .#@@@@@@@@@@@@@@*").bold());
-    println!("{}", ("          o@@@@@@@@@@@@@@@@°").bold());
-    println!("{}", ("         .#@@@@@@@@@@@@@@@@O").bold());
-    println!("{}", ("         °@@@@@@@@@@@@@@@@@#°").bold());
+    println!("{}", ("      .*O@@@@@@@@@@#o*.").bold().dimmed());
+    println!("{}", ("   *#@@@@@@@@@@@@@@@@@@#o.").bold().dimmed());
+    println!("{}", ("  O@@@@@@@@@@@@@@@@@@@@@@#°").bold().dimmed());
+    println!("{}", (" *@@@@@@@@@@@@@@@@@@@@@@@@*").bold().dimmed());
+    println!("{}", (" *@@@@@@@@@@@@@@@@@@Oo.@@o").bold().dimmed());
+    println!("{}", (" °#@@@@@@@o   .@@@@@   ##.").bold().dimmed());
+    println!("{}", (" .O@@@@@@@#*  .@@@@@@O#@o").bold().dimmed());
+    println!("{}", ("   .oO@@@@@@@@@@@@@@@@@o").bold().dimmed());
+    println!("{}", ("        .*o#@@@@@@@@#*.").bold().dimmed());
+    println!("{}", ("         *O@@@@@@@@@@O°").bold().dimmed());
+    println!("{}", ("       .#@@@@@@@@@@@@@@*").bold().dimmed());
+    println!("{}", ("       o@@@@@@@@@@@@@@@@°").bold().dimmed());
+    println!("{}", ("      .#@@@@@@@@@@@@@@@@O").bold().dimmed());
+    println!("{}", ("      °@@@@@@@@@@@@@@@@@#°").bold().dimmed());
 }
 
 pub fn print_instructions() -> () {
     println!(
-        "\n\t{} {} {} {} {}",
-        ("$").blink().green(),
-        ("$").blink_fast().bright_green(),
-        ("  G R E E D  ").bold().blink().bright_cyan(),
-        ("$").blink_fast().bright_green(),
-        ("$").blink().green()
+        "\n       {}{}{}{}{}{}{}",
+        ("🔥"),
+        ("🎲"),
+        ("🔥"),
+        ("GREED").green().blink(),
+        ("🔥"),
+        ("🎲"),
+        ("🔥"),
     );
-    println!("{}", ("\n\n\nHOW TO PLAY").dimmed().bold());
-    println!(
-        "{}",
-        ("\nRoll the dice as many times as you want.").on_truecolor(23, 23, 23)
-    );
-    println!(
-        "Once you choose to end your turn then, your turn score is added to your total score."
-    );
-    println!(
-        "{}",
-        ("If you roll a 1, your turn ends and no points are added to your total score.")
-            .on_truecolor(23, 23, 23)
-    );
-    println!("If you roll doubles, those dice are doubled in value.");
-    println!(
-        "{}",
-        ("If you roll SNAKE EYES, your turn ends and your total score is now 0.")
-            .on_truecolor(23, 23, 23)
-    );
-    println!("{}", ("Win by reaching 100 points.").italic().yellow());
-    println!("\n{}", ("All players get an equal amount of turns."));
-    println!("{}", ("If player 2 reaches 100 in 4 turns, then all following players get one last turn to get a higher score.").on_truecolor(23, 23, 23));
-    println!("Player 1 does not get to go again because they already had their 4th turn.");
-    println!(
-        "{}",
-        ("If you reach 100 points, you may continue rolling to set a higher score to beat.")
-            .on_truecolor(23, 23, 23)
-    );
-    println!("\nGOOD LUCK, HAVE FUN");
-    println!("{}", ("\ntype 'roll' to roll").dimmed());
-    println!("{}", ("type 'scoreboard' to see score").dimmed());
-    println!("{}", ("\nHow many players will be playing?").bright_blue());
+    println!("{}", ("\n\n\nHOW TO PLAY").bright_cyan().bold());
+    println!("{}{}{}", ("\ntype ").dimmed(), ("roll").bright_purple().italic(), (" to roll the dice").dimmed());
+    println!("{}{}{}", ("type ").dimmed(), ("score").bright_purple().italic(), (" to see scoreboard").dimmed());
+    println!("{} {}", ("\nTarget Score").yellow(), (TARGET).bold());
+    println!("\n{}", ("GOOD LUCK").bright_green().bold());
+    println!("{}", ("\nHow many players?").bright_blue());
 }
 
-// this takes the user input and creates a new Player type
-fn set_player(name: String) -> Player {
+pub fn set_player(name: String) -> Player {
     Player {
         name,
         score: 0,
         turn_count: 0,
+        items: Items::Empty,
     }
 }
+
 fn main() {
-    // Game rules
     print_milady();
     print_instructions();
 
+
+
+    // How many players?
     let mut p_string = String::new();
     io::stdin().read_line(&mut p_string).expect("cant read");
-    // read_line will read the user input
-    // and it will also read when they press 'enter'
-    // .trim() takes that off
     let p_string = p_string.trim();
     // change p string into and i32 so we can see how many players to create
     let p_num: i32 = p_string.parse().unwrap();
     // create empty vec to hold players
     let mut pvec: Vec<Player> = Vec::new();
 
-    // loop through every number in 1 - pnum
+    // create players
     let mut i = 1;
     loop {
-        // prompt players to enter their names
+        
+        // get names
         println!(
             "{}{}{}",
             ("PLAYER ").on_bright_green().bold(),
@@ -115,6 +127,8 @@ fn main() {
         );
         let mut new_name = String::new();
         io::stdin().read_line(&mut new_name).expect("cant read");
+
+        // 🤓 minionshit. can be refactored into a match statement
         if new_name.contains("Bob") || new_name.contains("bob") {
             println!("{}", ("~ B A N A N A ~").yellow());
         } else if new_name.contains("Kevin") || new_name.contains("kevin") {
@@ -126,8 +140,10 @@ fn main() {
         {
             println!("{}", ("~ B A N A N A ~").yellow());
         }
-        // use set_player function with user input as the parameter
-        let player: Player = set_player(new_name);
+        // 🤓
+
+        let trimmed_name: String = new_name.trim().to_string();
+        let player: Player = set_player(trimmed_name);
         // push each player in
         pvec.push(player);
 
@@ -139,63 +155,44 @@ fn main() {
 
     // dice simulation
     fn dice_roll() -> i32 {
-        let mut rng = thread_rng();
-        let roll: i32 = rng.gen_range(1..7);
-        roll
+        thread_rng().gen_range(1..7)
     }
 
     // vector of random prompts to spice it up
     let mut random_prompts: Vec<String> = Vec::new();
-    random_prompts.push(String::from("HURRY UP AND ROLL"));
-    random_prompts.push(String::from("ROLL THEM SHITS, BITCH"));
-    random_prompts.push(String::from("ROLL THE DICE!!!"));
-    random_prompts.push(String::from("YOUR TURN"));
-    random_prompts.push(String::from(
-        "*picks up dice...shakes vigorously...rolls them across the table",
-    ));
-    random_prompts.push(String::from("GOOD LUCK, HAVE FUN :)"));
-    random_prompts.push(String::from("DON'T BE GREEDY"));
-    random_prompts.push(String::from("YOU CAN DO IT!!!"));
-    random_prompts.push(String::from("your family is counting on you"));
-    random_prompts.push(String::from("please roll"));
-    random_prompts.push(String::from("your turn to roll now"));
-    random_prompts.push(String::from("right now it is your turn to roll now"));
-    random_prompts.push(String::from("ROLL THE VIRTUAL DICE"));
-    random_prompts.push(String::from("fucking roll already"));
-    random_prompts.push(String::from("please roll, milady"));
+    random_prompts.push(String::from(", ⌚ TIME TO ROLL"));
+    random_prompts.push(String::from(", 😎 IT WOULD BE COOL IF YOU ROLLED"));
+    random_prompts.push(String::from(", 🍀 GOOD LUCK!"));
+    random_prompts.push(String::from(", 🐌 TAKE YOUR TIME"));
 
     // random messages after rolling 1s
     let mut random_ones: Vec<String> = Vec::new();
-    random_ones.push(String::from("you rolled a 1! no points for this turn"));
-    random_ones.push(String::from("get good nerd"));
-    random_ones.push(String::from("no points scored because you rolled a 1"));
-    random_ones.push(String::from("get rekt"));
-    random_ones.push(String::from("HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHA"));
+    random_ones.push(String::from("👹👹👹👹👹👹👹👹👹"));
+    random_ones.push(String::from("🪦🤡"));
+    random_ones.push(String::from("🤣😹😂😹🤣"));
+    random_ones.push(String::from("🕷️🪲🪰🦗🪱🦟🪳🐜"));
 
     // snake eyes
     // doubles
+    let mut dubs_msg: Vec<String> = Vec::new();
+    dubs_msg.push(String::from("🤠🎉DOUBLES🎉🤠"));
+    dubs_msg.push(String::from("👽👾🌌🛸🌕🛸🌌👾👽"));
+    dubs_msg.push(String::from("🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔"));
+    dubs_msg.push(String::from("🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄"));
 
-    // this generates a random number 0-14 because there are 15 random prompts
-    fn gen_prompt_num() -> usize {
-        let mut prompt: ThreadRng = thread_rng();
-        let prompt_num: usize = prompt.gen_range(0..14);
-        prompt_num
+    let mut endgame: Vec<String> = Vec::new();
+    endgame.push(String::from("GOOD LUCK"));
+    endgame.push(String::from("DON'T CHOKE"));
+    endgame.push(String::from("YOU CAN DO IT"));
+    endgame.push(String::from("DON'T LOSE"));
+
+    // if i make the same number of prompts for each case
+    // then i only need one function
+    fn gen_prompt() -> usize {
+        thread_rng().gen_range(0..3)
     }
-    // R.O. means random One
-    fn gen_ro_prompt() -> usize {
-        let mut ro: ThreadRng = thread_rng();
-        let ro_num: usize = ro.gen_range(0..4);
-        ro_num
-    }
 
-    // fn gen_snake_msg
-    // fn gen_doubles_msg
-
-    // Using Closures that Capture Their Environment
-    // https://doc.rust-lang.org/book/ch13-02-iterators.html
-
-    // this function creates a vec of Players who have a certain turn_count left
-    // use .filter method to find players who still have to have a final turn
+    // collects players who get one last turn
     fn last_turns(players: Vec<Player>, turn_count: i32) -> Vec<Player> {
         players
             .into_iter()
@@ -205,37 +202,27 @@ fn main() {
 
     let mut i: usize = 0;
     'game: loop {
+
+
         // call gen functions
-        let rp_index: usize = gen_prompt_num();
-        let ro_index: usize = gen_ro_prompt();
-        // turn score vec: returns to 0 after your turn is over
-        // create new vec with vec![x; y]
-        // x being the value, y being the amount
-        // so we have p_num amount of 0s in our vec
-
-        // wait... do i even need to have a turn score for each player??
-        // i mean the score resets with the game loop anyways.
-        // and i only ever call turn_scores[i]
-        // so yes i dont need one for each player. i will change that later
-
-        // could be useful if i wanted to record highest turn score
-        // would be badass if you didnt win but you got an award for having the best run
-
+        let index: usize = gen_prompt();
         // try_into().unwrap() changes p_num from i32 to usize
         let mut turn_scores: Vec<i32> = vec![0; p_num.try_into().unwrap()];
+        // roll msg
         println!(
-            "\n\t{} {}: {}",
+            "\n\n{}{}\n",
             pvec[i]
                 .name
-                .trim()
                 .to_ascii_uppercase()
                 .bold()
-                .on_truecolor(150, 0, 100),
-            pvec[i].score.underline().truecolor(150, 0, 100),
-            random_prompts[rp_index].cyan()
+                .italic()
+                .bright_green(),
+            random_prompts[index].cyan()
         );
 
         'turn: loop {
+
+
             let roll1 = dice_roll();
             let roll2 = dice_roll();
             let roll3 = dice_roll();
@@ -244,46 +231,44 @@ fn main() {
                 .read_line(&mut keyboard_roll)
                 .expect("cant read that");
             if keyboard_roll.trim().contains("roll") {
+                // 🎲🎲 print roll
                 println!(
-                    "\n\t{} & {}",
-                    roll1.on_truecolor(0, 95, 95).bold().underline(),
-                    roll2.on_truecolor(69, 0, 69).bold().underline()
+                    "\n{} + {} = {}\n",
+                    roll1.red().on_white().bold(),
+                    roll2.red().on_white().bold(),
+                    (roll1 + roll2).bright_green()
                 );
 
                 // rolling snake eyes
                 if roll1 == 1 && roll2 == 1 {
-                    println!("\n{}", ("SNAKE EYES").on_bright_magenta());
+                    println!("\n{}", ("  SNAKE EYES  ").on_bright_magenta());
                     pvec[i].score *= 0;
-                    println!(
-                        "{}, your total score is {}",
-                        pvec[i].name.trim(),
-                        pvec[i].score
-                    );
+                    println!("{}", ("TOTAL SCORE 0").red());
                     pvec[i].turn_count += 1;
                     break 'turn;
 
                 // rolling a 1
                 } else if roll1 == 1 || roll2 == 1 {
-                    println!("\n{}", random_ones[ro_index]);
-                    println!(
-                        "{}, your total score is {}",
-                        pvec[i].name.trim(),
-                        pvec[i].score
-                    );
+                    println!("\n{}", random_ones[index]);
+                    println!("{}", ("ROLLED A 1!").dimmed());
+                    println!("{}", ("TURN COMPLETE").red());
+                    println!("{} {}", ("TOTAL SCORE").blue(), pvec[i].score);
                     pvec[i].turn_count += 1;
                     break 'turn;
 
                 // rolling doubles
                 } else if roll1 == roll2 {
-                    println!("\n{}", ("DOUBLES").bright_yellow().bold());
+                    /* 👽 */
+                    println!("{}", dubs_msg[index]);
                     turn_scores[i] += roll1 * 4;
+                    println!("\nx2 = {}🎉", (roll1 * 4).bright_green());
                     println!(
-                        "{}: {} {}",
-                        pvec[i].name.trim().red(),
-                        ("your turn score is:").cyan(),
-                        turn_scores[i].bold().on_bright_cyan()
+                        "{}{},{} {}",
+                        ("TURN SCORE").dimmed(),
+                        turn_scores[i].green(),
+                        (" ROLL AGAIN?").bright_blue(),
+                        ("y / n").dimmed()
                     );
-                    println!("\nroll again? [y,n]");
 
                     // go again?
                     let mut response = String::new();
@@ -298,23 +283,24 @@ fn main() {
                     else {
                         pvec[i].score += turn_scores[i];
                         println!(
-                            "\n{}, your total score is {}",
-                            pvec[i].name.trim().on_truecolor(3, 4, 5),
+                            "total score {}",
                             pvec[i].score.bright_green()
                         );
                         pvec[i].turn_count += 1;
                         break 'turn;
                     }
                 }
+
                 // normal roll
                 // go again?
                 turn_scores[i] += roll1 + roll2;
                 println!(
-                    "{}, your turn score is {}",
-                    pvec[i].name.trim().on_cyan(),
-                    turn_scores[i].red()
+                    "{}{},{} {}",
+                    ("turn score:").dimmed(),
+                    turn_scores[i].green(),
+                    (" ROLL AGAIN?").bright_blue(),
+                    ("y / n").dimmed()
                 );
-                println!("\nroll again? {}", ("[y,n]").on_bright_purple());
                 let mut response = String::new();
                 io::stdin().read_line(&mut response).expect("can't read");
                 let binary = response.contains("y");
@@ -327,9 +313,9 @@ fn main() {
                 else {
                     pvec[i].score += turn_scores[i];
                     println!(
-                        "{}, your total score is {}",
-                        pvec[i].name.trim().on_truecolor(3, 44, 55),
-                        pvec[i].score
+                        "{} {}",
+                        ("TOTAL SCORE").blue(),
+                        pvec[i].score.bright_green()
                     );
                     pvec[i].turn_count += 1;
                     break 'turn;
@@ -340,16 +326,16 @@ fn main() {
                 println!("you rolled: \n {} {} {}", roll1, roll2, roll3);
                 turn_scores[i] += roll1 + roll2 + roll3;
                 println!("turn score: {}", turn_scores[i].bright_magenta())
-            } else if keyboard_roll.contains("scoreboard") {
-                let mut s = 0;
-                loop {
-                    println!("{} {}", pvec[s].name.trim(), pvec[s].score);
-                    if s + 1 == p_num.try_into().unwrap() {
-                        break;
-                    }
-                    s += 1;
-                }
             }
+// 💯💯💯💯💯 scoreboard
+            else if keyboard_roll.contains("score") {
+                let name = &pvec[i].name;
+                let score = &pvec[i].score;
+                
+
+                println!("{} {}\n", name.cyan(), score.bright_green())
+            }
+//💯💯💯💯💯💯💯
         }
         // end of turn loop
 
@@ -358,18 +344,25 @@ fn main() {
         // temp changed to 30 so i can test the end game in terminal
 
         // if last player wins then this loop is unessecary
-        if pvec[i].score >= 100 {
-            println!("CONGRATS {}", pvec[i].name);
-            println!("***YOU WIN***");
+        if pvec[i].score >= TARGET {
+            println!("\nCONGRATS {}!", (pvec[i].name).bright_green());
+            println!("\n🏆🥇YOU WON🥇🏆");
             if i == (p_num - 1).try_into().unwrap() {
                 break 'game;
             } else {
-                println!("...but not so fast");
-                println!("you won in {} turns, so every player who hasn't had {} turns gets to try one last time", pvec[i].turn_count, pvec[i].turn_count);
+                println!(
+                    "\n...but not so fast. You won in {} turns,\n",
+                    (pvec[i].turn_count).cyan()
+                );
+                println!(
+                    "players who have not had {} turns get to go again.",
+                    (pvec[i].turn_count).cyan()
+                );
 
                 let total_turns_minus_one = pvec[i].turn_count - 1;
                 let cloned_pvec = pvec.clone();
                 let mut final_round_players = last_turns(cloned_pvec, total_turns_minus_one);
+                println!("{:?}", final_round_players);
 
                 let mut v: usize = 0;
                 let mut high_scores: Vec<Player> = vec![pvec[i].clone()];
@@ -377,7 +370,7 @@ fn main() {
                     'final_turn: loop {
                         if final_round_players[v].score > high_scores[0].score {
                             println!(
-                                "{} you have surpassed {}'s score",
+                                "{} you've passed {}'s score",
                                 final_round_players[v].name.trim().bold().on_cyan(),
                                 pvec[i].name.trim().bold().on_bright_magenta()
                             );
@@ -386,29 +379,32 @@ fn main() {
                             println!("You set the new high score!");
                         }
                         println!(
-                            "last chance {}",
-                            final_round_players[v].name.trim().bright_green().bold()
+                            "\n\n{}, {}",
+                            final_round_players[v].name.bright_green().bold(),
+                            endgame[index].bold()
                         );
                         println!(
-                            "your score is {}, {} points away!",
-                            final_round_players[v].score.yellow().bold(),
-                            high_scores[0].score - final_round_players[v].score
+                            "score:{}, {} points away!",
+                            final_round_players[v].score.cyan().bold(),
+                            (high_scores[0].score - final_round_players[v].score).red()
                         );
-                        println!("type 'milady' to roll for the last time");
-                        let mut milady = String::new();
-                        io::stdin().read_line(&mut milady).expect("cant read");
-                        if milady.trim().contains("milady") {
+
+                        //use normal turn functions!
+                        let mut endroll = String::new();
+                        io::stdin().read_line(&mut endroll).expect("cant read");
+                        if endroll.trim().contains("roll") {
                             let roll1 = dice_roll();
                             let roll2 = dice_roll();
-                            println!("You");
-                            println!("rolled");
-                            println!("...");
-                            println!("{} + {}", roll1.red().on_bright_white(), roll2)
-                                .red()
-                                .on_white();
+                            // 🎲🎲 print roll
+                            println!(
+                                "\n\n{} + {} = {}",
+                                roll1.red().on_white().bold(),
+                                roll2.red().on_white().bold(),
+                                (roll1 + roll2).bright_green()
+                            );
                             if roll1 == 1 && roll2 == 1 {
                                 println!(
-                                    "wow {} you are very unlucky",
+                                    "sorry {}, u lose",
                                     final_round_players[v].name.trim().bold().bright_green()
                                 );
                                 v += 1;
@@ -482,12 +478,6 @@ fn main() {
             // end turn loop
         }
 
-        // use filter method to create vec of structs with given attribute
-        // give only the remaining players the option to roll 1 last time
-        // iter through slice of the vector
-        // then see if anyone has gotten a higher score
-        // break loop print winner
-        // reset turn loop back to player 1
         let p_num_minus_one = p_num - 1;
         if i == p_num_minus_one.try_into().unwrap() {
             i *= 0
