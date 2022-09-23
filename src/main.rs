@@ -1,20 +1,25 @@
-use owo_colors::OwoColorize;
-use rand::prelude::ThreadRng;
-use rand::thread_rng;
-use rand::Rng;
-use std::collections::HashMap;
-use std::io;
+mod greed;
+use greed::{mega_roll, roll};
 
-// to do
-//
-// fix blank screen after rolling 1
-// scoreboard sort scoreboard
-// remind players how many points away they are
-//
-// create items?
-// type r to roll s to see score i to choose item
-//
-// fix end game
+use owo_colors::OwoColorize;
+use rand::thread_rng;
+use rand::{
+    distributions::{Distribution, Standard},
+    Rng,
+};
+use std::io;
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
+
+// implement items!
+// add emojis on vim
+// update scoreboard
+
+// better way to rewrite if loops:
+// use match statements!
+// match keyboard_roll {
+//     "roll" => normal_roll();
+// }
 
 #[derive(Debug, Clone)]
 pub struct Player {
@@ -32,8 +37,7 @@ impl Player {
 
 const TARGET: i32 = 100;
 
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, EnumIter)]
 pub enum Items {
     /// roll dice values of 1-10
     MegaDice,
@@ -51,6 +55,20 @@ pub enum Items {
     Yoink,
     /// empty
     Empty,
+}
+
+impl Distribution<Items> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Items {
+        match rng.gen_range(0..=7) {
+            0 => Items::MegaDice,
+            1 => Items::TripleDice,
+            2 => Items::LeechDice,
+            3 => Items::EvilDice,
+            4 => Items::EvenOddHighLow,
+            5 => Items::ScoreSwap,
+            _ => Items::Yoink,
+        }
+    }
 }
 
 pub fn print_milady() -> () {
@@ -83,9 +101,52 @@ pub fn print_instructions() -> () {
         ("🔥"),
     );
     println!("{}", ("\n\n\nHOW TO PLAY").bright_cyan().bold());
-    println!("{}{}{}", ("\ntype ").dimmed(), ("roll").bright_purple().italic(), (" to roll the dice").dimmed());
-    println!("{}{}{}", ("type ").dimmed(), ("score").bright_purple().italic(), (" to see scoreboard").dimmed());
-    println!("{} {}", ("\nTarget Score").yellow(), (TARGET).bold());
+    println!(
+        "{}{}{}",
+        ("\ntype ").dimmed(),
+        ("r").bright_purple().italic(),
+        (" to roll the dice").dimmed()
+    );
+    println!(
+        "{}{}{}",
+        ("type ").dimmed(),
+        ("s").bright_purple().italic(),
+        (" to see scoreboard").dimmed()
+    );
+    println!(
+        "{}{}{}",
+        ("type ").dimmed(),
+        ("i").bright_purple().italic(),
+        (" to check item bag\n").dimmed()
+    );
+    println!(
+        "First player to reach {} wins",
+        TARGET.bold().bright_green()
+    );
+    println!(
+        "{}",
+        ("Players take turn rolling the dice as many times as they want.\n")
+    );
+    println!(
+        "{}{}{}",
+        ("If you roll "),
+        ("SNAKE EYES").cyan().italic(),
+        (" (two ones), you lose all of your points.")
+    );
+    println!(
+        "{}{}{}",
+        ("If you roll "),
+        ("DOUBLES").cyan().italic(),
+        (" those dice are doubles in value.")
+    );
+    println!(
+        "{}{}{}{}{}",
+        ("If you roll a "),
+        ("1").cyan(),
+        (" you get "),
+        ("0").red(),
+        (" points and your turn is over.")
+    );
     println!("\n{}", ("GOOD LUCK").bright_green().bold());
     println!("{}", ("\nHow many players?").bright_blue());
 }
@@ -103,8 +164,6 @@ fn main() {
     print_milady();
     print_instructions();
 
-
-
     // How many players?
     let mut p_string = String::new();
     io::stdin().read_line(&mut p_string).expect("cant read");
@@ -117,7 +176,6 @@ fn main() {
     // create players
     let mut i = 1;
     loop {
-        
         // get names
         println!(
             "{}{}{}",
@@ -127,21 +185,6 @@ fn main() {
         );
         let mut new_name = String::new();
         io::stdin().read_line(&mut new_name).expect("cant read");
-
-        // 🤓 minionshit. can be refactored into a match statement
-        if new_name.contains("Bob") || new_name.contains("bob") {
-            println!("{}", ("~ B A N A N A ~").yellow());
-        } else if new_name.contains("Kevin") || new_name.contains("kevin") {
-            println!("{}", ("~ B A N A N A ~").yellow());
-        } else if new_name.contains("Stuart")
-            || new_name.contains("stuart")
-            || new_name.contains("Stu")
-            || new_name.contains("stu")
-        {
-            println!("{}", ("~ B A N A N A ~").yellow());
-        }
-        // 🤓
-
         let trimmed_name: String = new_name.trim().to_string();
         let player: Player = set_player(trimmed_name);
         // push each player in
@@ -156,6 +199,10 @@ fn main() {
     // dice simulation
     fn dice_roll() -> i32 {
         thread_rng().gen_range(1..7)
+    }
+
+    fn mega_dice_roll() -> i32 {
+        thread_rng().gen_range(1..11)
     }
 
     // vector of random prompts to spice it up
@@ -202,8 +249,6 @@ fn main() {
 
     let mut i: usize = 0;
     'game: loop {
-
-
         // call gen functions
         let index: usize = gen_prompt();
         // try_into().unwrap() changes p_num from i32 to usize
@@ -221,26 +266,262 @@ fn main() {
         );
 
         'turn: loop {
+            let r1 = dice_roll();
+            let r2 = dice_roll();
+            let m1 = mega_dice_roll();
+            let m2 = mega_dice_roll();
+            let secret_num = dice_roll();
 
+            let mega1 = mega_dice_roll();
+            let mega2 = mega_dice_roll();
 
-            let roll1 = dice_roll();
-            let roll2 = dice_roll();
-            let roll3 = dice_roll();
             let mut keyboard_roll = String::new();
             io::stdin()
                 .read_line(&mut keyboard_roll)
                 .expect("cant read that");
-            if keyboard_roll.trim().contains("roll") {
+
+            // construction zone
+            match keyboard_roll.trim() {
+                "s" => {
+                    println!("\n{}", ("SCOREBOARD").cyan().bold());
+                    for i in pvec.iter() {
+                        println!(
+                            "{} {}",
+                            i.name.to_ascii_uppercase().bright_magenta(),
+                            i.score.bright_green().bold()
+                        )
+                    }
+                },
+                // normal roll
+                "r" => {
+                    // 🎲🎲 print roll
+                    println!(
+                        "\n{} + {} = {}\n",
+                        r1.red().on_white().bold(),
+                        r2.red().on_white().bold(),
+                        (r1 + r2).bright_green()
+                    );
+
+                    // dice options
+                    // rolling snake eyes
+                    if r1 == 1 && r2 == 1 {
+                        println!("\n{}", ("  SNAKE EYES  ").on_bright_magenta());
+                        pvec[i].score *= 0;
+                        println!("{}", ("TOTAL SCORE 0").red());
+                        pvec[i].turn_count += 1;
+                        break 'turn;
+
+                    // rolling a 1
+                    } else if r1 == 1 || r2 == 1 {
+                        println!("\n{}", random_ones[index]);
+                        println!("{}", ("ROLLED A 1!").dimmed());
+                        println!("{}", ("TURN COMPLETE").red());
+                        println!("{} {}", ("TOTAL SCORE").blue(), pvec[i].score);
+                        pvec[i].turn_count += 1;
+                        break 'turn;
+
+                    // rolling secret num
+                    } else if r1 == secret_num || r2 == secret_num {
+                        // insert emojis NVIM
+                        let random_item: Items = rand::random();
+                        println!("{}", ("secret number rolled!").italic().dimmed());
+                        println!(
+                            "{}{}{:?}\n",
+                            pvec[i].name.to_ascii_uppercase().bright_green().bold(),
+                            (" picked up ").bright_cyan(),
+                            random_item.bright_magenta().bold()
+                        );
+                        pvec[i].items = random_item;
+
+                    // rolling doubles
+                    } else if r1 == r2 {
+                        /* 👽 */
+                        println!("{}", dubs_msg[index]);
+                        turn_scores[i] += r1 * 4;
+                        println!("\nx2 = {}🎉", (r1 * 4).bright_green());
+                        println!(
+                            "{} {},{} {}",
+                            ("TURN SCORE").dimmed(),
+                            turn_scores[i].green(),
+                            (" ROLL AGAIN?").bright_blue(),
+                            ("y / n").dimmed()
+                        );
+
+                        // go again?
+                        let mut response = String::new();
+                        io::stdin().read_line(&mut response).expect("can't read");
+                        let binary = response.contains("y");
+
+                        // yes
+                        if binary == true {
+                            continue 'turn;
+                        }
+                        // no
+                        else {
+                            pvec[i].score += turn_scores[i];
+                            println!(
+                                "{} {}",
+                                ("TOTAL SCORE").blue(),
+                                pvec[i].score.bright_green()
+                            );
+                            pvec[i].turn_count += 1;
+                            break 'turn;
+                        }
+                    }
+
+                    // normal roll
+                    // go again?
+                    turn_scores[i] += r1 + r2;
+                    println!(
+                        "{}{},{} {}",
+                        ("turn score:").dimmed(),
+                        turn_scores[i].green(),
+                        (" ROLL AGAIN?").bright_blue(),
+                        ("y / n").dimmed()
+                    );
+                    let mut response = String::new();
+                    io::stdin().read_line(&mut response).expect("can't read");
+                    let binary = response.contains("y");
+
+                    // yes
+                    if binary == true {
+                        continue 'turn;
+                    }
+                    // no
+                    else {
+                        pvec[i].score += turn_scores[i];
+                        println!(
+                            "{} {}",
+                            ("TOTAL SCORE").blue(),
+                            pvec[i].score.bright_green()
+                        );
+                        pvec[i].turn_count += 1;
+                        break 'turn;
+                    }
+                },
+                "mega" => if pvec[i].items == Items::MegaDice {
+                    // 🎲🎲 print roll
+                    println!(
+                        "\n{} + {} = {}\n",
+                        m1.red().on_white().bold(),
+                        m2.red().on_white().bold(),
+                        (m1 + m2).bright_green()
+                    );
+
+                    // dice options
+                    // rolling snake eyes
+                    if m1 == 1 && m2 == 1 {
+                        println!("\n{}", ("  SNAKE EYES  ").on_bright_magenta());
+                        pvec[i].score *= 0;
+                        println!("{}", ("TOTAL SCORE 0").red());
+                        pvec[i].turn_count += 1;
+                        break 'turn;
+
+                    // rolling a 1
+                    } else if m1 == 1 || m2 == 1 {
+                        println!("\n{}", random_ones[index]);
+                        println!("{}", ("ROLLED A 1!").dimmed());
+                        println!("{}", ("TURN COMPLETE").red());
+                        println!("{} {}", ("TOTAL SCORE").blue(), pvec[i].score);
+                        pvec[i].turn_count += 1;
+                        break 'turn;
+
+                    // rolling secret num
+                    } else if m1 == secret_num || m2 == secret_num {
+                        // insert emojis NVIM
+                        let random_item: Items = rand::random();
+                        println!("{}", ("secret number rolled!").italic().dimmed());
+                        println!(
+                            "{}{}{:?}\n",
+                            pvec[i].name.to_ascii_uppercase().bright_green().bold(),
+                            (" picked up ").bright_cyan(),
+                            random_item.bright_magenta().bold()
+                        );
+                        pvec[i].items = random_item;
+
+                    // rolling doubles
+                    } else if m1 == m2 {
+                        /* 👽 */
+                        println!("{}", dubs_msg[index]);
+                        turn_scores[i] += m1 * 4;
+                        println!("\nx2 = {}🎉", (m1 * 4).bright_green());
+                        println!(
+                            "{} {},{} {}",
+                            ("TURN SCORE").dimmed(),
+                            turn_scores[i].green(),
+                            (" ROLL AGAIN?").bright_blue(),
+                            ("y / n").dimmed()
+                        );
+
+                        // go again?
+                        let mut response = String::new();
+                        io::stdin().read_line(&mut response).expect("can't read");
+                        let binary = response.contains("y");
+
+                        // yes
+                        if binary == true {
+                            continue 'turn;
+                        }
+                        // no
+                        else {
+                            pvec[i].score += turn_scores[i];
+                            println!(
+                                "{} {}",
+                                ("TOTAL SCORE").blue(),
+                                pvec[i].score.bright_green()
+                            );
+                            pvec[i].turn_count += 1;
+                            break 'turn;
+                        }
+                    }
+
+                    // normal roll
+                    // go again?
+                    turn_scores[i] += m1 + m2;
+                    println!(
+                        "{}{},{} {}",
+                        ("turn score:").dimmed(),
+                        turn_scores[i].green(),
+                        (" ROLL AGAIN?").bright_blue(),
+                        ("y / n").dimmed()
+                    );
+                    let mut response = String::new();
+                    io::stdin().read_line(&mut response).expect("can't read");
+                    let binary = response.contains("y");
+
+                    // yes
+                    if binary == true {
+                        continue 'turn;
+                    }
+                    // no
+                    else {
+                        pvec[i].score += turn_scores[i];
+                        println!(
+                            "{} {}",
+                            ("TOTAL SCORE").blue(),
+                            pvec[i].score.bright_green()
+                        );
+                        pvec[i].turn_count += 1;
+                        break 'turn;
+                    }
+                    
+                },
+                _ => println!("please enter valid command"),
+            }
+            // construction zone
+
+            if keyboard_roll.trim().contains("121212") {
                 // 🎲🎲 print roll
                 println!(
                     "\n{} + {} = {}\n",
-                    roll1.red().on_white().bold(),
-                    roll2.red().on_white().bold(),
-                    (roll1 + roll2).bright_green()
+                    r1.red().on_white().bold(),
+                    r2.red().on_white().bold(),
+                    (r1 + r2).bright_green()
                 );
 
+                // dice options
                 // rolling snake eyes
-                if roll1 == 1 && roll2 == 1 {
+                if r1 == 1 && r2 == 1 {
                     println!("\n{}", ("  SNAKE EYES  ").on_bright_magenta());
                     pvec[i].score *= 0;
                     println!("{}", ("TOTAL SCORE 0").red());
@@ -248,7 +529,7 @@ fn main() {
                     break 'turn;
 
                 // rolling a 1
-                } else if roll1 == 1 || roll2 == 1 {
+                } else if r1 == 1 || r2 == 1 {
                     println!("\n{}", random_ones[index]);
                     println!("{}", ("ROLLED A 1!").dimmed());
                     println!("{}", ("TURN COMPLETE").red());
@@ -256,14 +537,27 @@ fn main() {
                     pvec[i].turn_count += 1;
                     break 'turn;
 
+                // rolling secret num
+                } else if r1 == secret_num || r2 == secret_num {
+                    // insert emojis NVIM
+                    let random_item: Items = rand::random();
+                    println!("{}", ("secret number rolled!").italic().dimmed());
+                    println!(
+                        "{}{}{:?}\n",
+                        pvec[i].name.to_ascii_uppercase().bright_green().bold(),
+                        (" picked up ").bright_cyan(),
+                        random_item.bright_magenta().bold()
+                    );
+                    pvec[i].items = random_item;
+
                 // rolling doubles
-                } else if roll1 == roll2 {
+                } else if r1 == r2 {
                     /* 👽 */
                     println!("{}", dubs_msg[index]);
-                    turn_scores[i] += roll1 * 4;
-                    println!("\nx2 = {}🎉", (roll1 * 4).bright_green());
+                    turn_scores[i] += r1 * 4;
+                    println!("\nx2 = {}🎉", (r1 * 4).bright_green());
                     println!(
-                        "{}{},{} {}",
+                        "{} {},{} {}",
                         ("TURN SCORE").dimmed(),
                         turn_scores[i].green(),
                         (" ROLL AGAIN?").bright_blue(),
@@ -283,7 +577,8 @@ fn main() {
                     else {
                         pvec[i].score += turn_scores[i];
                         println!(
-                            "total score {}",
+                            "{} {}",
+                            ("TOTAL SCORE").blue(),
                             pvec[i].score.bright_green()
                         );
                         pvec[i].turn_count += 1;
@@ -293,7 +588,7 @@ fn main() {
 
                 // normal roll
                 // go again?
-                turn_scores[i] += roll1 + roll2;
+                turn_scores[i] += r1 + r2;
                 println!(
                     "{}{},{} {}",
                     ("turn score:").dimmed(),
@@ -323,19 +618,110 @@ fn main() {
             } else if keyboard_roll.contains("banana") {
                 println!("{}", ("~ B A N A N A ~").yellow());
             } else if keyboard_roll.contains("triples is best") {
-                println!("you rolled: \n {} {} {}", roll1, roll2, roll3);
-                turn_scores[i] += roll1 + roll2 + roll3;
+                println!("you rolled: \n {} {} {}", r1, r2, secret_num);
+                turn_scores[i] += r1 + r2 + secret_num;
                 println!("turn score: {}", turn_scores[i].bright_magenta())
             }
-// 💯💯💯💯💯 scoreboard
-            else if keyboard_roll.contains("score") {
+            // 💯💯💯💯💯 scoreboard
+            else if keyboard_roll.contains("999") {
                 let name = &pvec[i].name;
                 let score = &pvec[i].score;
-                
 
-                println!("{} {}\n", name.cyan(), score.bright_green())
+                println!("\n{} {}\n", name.cyan(), score.bright_green())
+            } else if keyboard_roll.trim().contains("i") {
+                println!("\n~{:?}~\n", pvec[i].items.bright_blue());
+                match pvec[i].items {
+                    Items::Empty => println!(" "),
+                    Items::MegaDice => println!(
+                        "{}{}{}\n",
+                        ("type ").dimmed(),
+                        ("mega").bright_magenta(),
+                        (" to roll 2 ten-sided-dice.").dimmed()
+                    ),
+                    Items::LeechDice => println!(
+                        "{}{}{}\n",
+                        ("type ").dimmed(),
+                        ("leech").bright_magenta(),
+                        (" to leech off the score of another player").dimmed()
+                    ),
+                    Items::EvenOddHighLow => println!(
+                        "{}{}{}\n{}{}\n",
+                        ("type ").dimmed(),
+                        ("even").bright_magenta(),
+                        (" to guess even/odd, then guess higher/lower.").dimmed(),
+                        ("If you get 1 right your, roll is doubled.").dimmed(),
+                        ("If you get both right, your roll is quadrupled").dimmed()
+                    ),
+                    Items::Yoink => println!(
+                        "{}{}{}\n",
+                        ("type ").dimmed(),
+                        ("yoink").bright_magenta(),
+                        (" to yoink an item from another player").dimmed()
+                    ),
+                    Items::EvilDice => println!(
+                        "{}{}{}{}{}\n",
+                        ("type ").dimmed(),
+                        ("evil").bright_magenta(),
+                        (" to roll the Evil Dice.").dimmed(),
+                        ("\nDice value will be doubled and subtracted from opponents' scores.")
+                            .dimmed(),
+                        ("You will not gain any points.").dimmed()
+                    ),
+                    Items::ScoreSwap => println!(
+                        "{}{}{}\n",
+                        ("type ").dimmed(),
+                        ("swap").bright_magenta(),
+                        (" to swap scores with any opponent you choose.").dimmed()
+                    ),
+                    Items::TripleDice => println!(
+                        "{}{}{}\n",
+                        ("type ").dimmed(),
+                        ("triple").bright_magenta(),
+                        (" to roll 3 dice.").dimmed()
+                    ),
+                }
+            } else if keyboard_roll.trim().contains("mega") && pvec[i].items != Items::MegaDice {
+                println!("{}", ("YOU DON'T HAVE ANY MEGADICE").red())
+            } else if keyboard_roll.trim().contains("mega") && pvec[i].items == Items::MegaDice {
+                // 🎲🎲 print roll
+                println!(
+                    "\n{} + {} = {}\n",
+                    mega1.red().on_white().bold(),
+                    mega2.red().on_white().bold(),
+                    (mega1 + mega2).bright_green()
+                );
+                turn_scores[i] += mega1 + mega2;
+
+                println!(
+                    "{}{},{} {}",
+                    ("turn score:").dimmed(),
+                    turn_scores[i].green(),
+                    (" ROLL AGAIN?").bright_blue(),
+                    ("y / n").dimmed()
+                );
+                pvec[i].items = Items::Empty;
+                let mut response = String::new();
+                io::stdin().read_line(&mut response).expect("can't read");
+                let binary = response.contains("y");
+
+                // yes
+                if binary == true {
+                    continue 'turn;
+                }
+                // no
+                else {
+                    pvec[i].score += turn_scores[i];
+                    println!(
+                        "{} {}",
+                        ("TOTAL SCORE").blue(),
+                        pvec[i].score.bright_green()
+                    );
+                    pvec[i].turn_count += 1;
+                    break 'turn;
+                }
             }
-//💯💯💯💯💯💯💯
+
+            //💯💯💯💯💯💯💯
         }
         // end of turn loop
 
