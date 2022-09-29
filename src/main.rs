@@ -838,7 +838,11 @@ fn main() {
                             }
                         }
                             
-                        } /* end loop */
+                        } 
+                        println!("\n{}", ("ROLL MULTIPLIER?").purple().blink());
+                        println!("{}", ("if you roll 1-3, you'll double the score that you leech from your victim").purple().dimmed().italic());
+                        println!("{}", ("if you roll 4-6, you'll double the score that will be leeched from you").purple().dimmed().italic());
+                        /* end loop */
 
                         // 🎲🎲 print roll
                         println!(
