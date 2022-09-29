@@ -1,6 +1,3 @@
-mod greed;
-use greed::{mega_roll, roll};
-
 use owo_colors::OwoColorize;
 use rand::thread_rng;
 use rand::{
