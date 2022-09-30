@@ -824,7 +824,7 @@ fn main() {
                             let cur = pvec[n].name.to_owned();
                             match victim.trim() {
                                 x if x == cur => {
-                                println!("\n{}{}", ("victim has been chosen.......it will be ...... ").purple().dimmed(), cur.purple() );
+                                println!("\n{}{}{}", pvec[i].name.to_ascii_uppercase().purple(), (" chose ").purple().dimmed(), cur.to_ascii_uppercase().purple() );
                                 break 'outer;
                                 }
                                 _ => {n += 1} 
@@ -838,21 +838,56 @@ fn main() {
                             }
                         }
                             
-                        } 
-                        println!("\n{}", ("ROLL MULTIPLIER?").purple().blink());
-                        println!("{}", ("if you roll 1-3, you'll double the score that you leech from your victim").purple().dimmed().italic());
-                        println!("{}", ("if you roll 4-6, you'll double the score that will be leeched from you").purple().dimmed().italic());
-                        /* end loop */
+                        } /* end loop */
+                        println!("\n{}{}\n", ("ROLL MULTIPLIER? ").purple(), ("y / n").purple().dimmed().italic());
+                        println!("{}", ("roll 1-3 to double the score that you leech").purple().dimmed().italic());
+                        println!("{}\n", ("roll 4-6 and the score will be doubled and leeched from you!").purple().dimmed().italic());
+                        
+                        loop {
+                            let mut multi = String::new();
+                            io::stdin().read_line(&mut multi).expect("cant");
+                            match multi.trim() {
+                                "y" => {
+                                    // 🎲🎲 print roll
+                                    println!(
+                                        "\n{} {} {} {} {}\n",
+                                        r1.white().on_purple().bold(),
+                                        ("+").purple(),
+                                        r2.white().on_purple().bold(),
+                                        ("=").purple(),
+                                        (r1 + r2 ).purple().blink()
+                                    );
+                                    let pts_stolen = (r1 + r2)*2;
+                                    println!("{}{}", ("and the multiplier roll is...").purple(), r3.white().on_purple().bold());
+                                    match r3 {
+                                        x if x >= 4 => {
+                                            println!("{}{}{}{}{}{}", pts_stolen.purple().bold(), ("pts ").purple().bold(), ("will be taken from ").purple().dimmed(), pvec[i].name.purple().bold(), (" and given to ").purple().dimmed(), ("").purple().bold());
+                                            pvec[i].score -= pts_stolen;
 
-                        // 🎲🎲 print roll
-                        println!(
-                            "\n{} {} {} {} {}\n",
-                            r1.white().on_purple().bold(),
-                            ("+").purple(),
-                            r2.white().on_purple().bold(),
-                            ("=").purple(),
-                            (r1 + r2 ).purple().blink()
-                        );
+                                        }
+                                        x if x <= 3 => {}
+                                        _ => ()
+                                    }
+                                    break
+                                }
+                                "n" => {
+                                    // 🎲🎲 print roll
+                                    println!(
+                                        "\n{} {} {} {} {}\n",
+                                        r1.white().on_purple().bold(),
+                                        ("+").purple(),
+                                        r2.white().on_purple().bold(),
+                                        ("=").purple(),
+                                        (r1 + r2 ).purple().blink()
+                                    );
+                                    println!("{}", ("no multiplier").purple().dimmed().italic());
+                                    println!("{}{}{}{}{}{}", (" ").to_ascii_uppercase().purple().bold(), ("gave ").purple(), (r1 + r2).purple().bold(), ("pts").purple().bold(), (" to ").purple(), pvec[i].name.to_ascii_uppercase().purple().bold());
+                                    break
+                                }
+                                _ => println!("{}", ("please make a decision! y / n").purple().dimmed().italic())
+                            }
+                        }
+                        
                     
                     }
                 // add emojis in vim!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
