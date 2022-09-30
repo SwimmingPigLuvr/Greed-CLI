@@ -4,6 +4,7 @@ use rand::{
     distributions::{Distribution, Standard},
     Rng,
 };
+use std::mem;
 use std::borrow::Borrow;
 use std::io::Read;
 use std::{default, io};
@@ -13,6 +14,11 @@ use strum_macros::EnumIter;
 // 9-29
 // To Do
 // implement all items
+
+// 930 to do
+// figue out how to swap two values
+// use other values to buffer?
+// use std::mem::swap?
 
 #[derive(Debug, Clone, Default)]
 pub struct Player {
@@ -848,10 +854,13 @@ fn main() {
                             );
 
                         },
-                        (6, 9) => println!("{}", ("nice sunglasses emoji")),
-                        (3, 11) => println!("{}", ("woah amber is the color of your energy")),
-                        (7, 11) => println!("{}", ("711 bonus! free slurpees for everyone")),
-                        (9, 11) => println!("{}", ("plane building emojis 911 in rememberance of building 7, each player is awarded +7pts!")),
+                        (6, 9) => {println!("{}", ("nice sunglasses emoji"));
+                            turn_scores[i] += m1 + m2
+                    },
+                        (3, 11) => {println!("{}", ("woah amber is the color of your energy")); turn_scores[i] += m1 + m2
+                    },
+                        (7, 11) => {println!("{}", ("711 bonus! free slurpees for everyone")); turn_scores[i] += m1 + m2},
+                        (9, 11) => {println!("{}", ("plane building emojis 911 in rememberance of building 7, each player is awarded +7pts!")); turn_scores[i] += m1 + m2},
                         //normal roll
                         _ => {turn_scores[i] += m1 + m2;
                         println!(
@@ -1114,7 +1123,42 @@ fn main() {
                     pvec[i].items = Items::Nothing;
                     println!("{}", ("Keep Rolling\n").dimmed().italic())
                 }
+                ("swap", Items::ScoreSwap) => {
+                    // use item
+                    pvec[i].items = Items::Nothing;
+                    println!("{}", (" CHOOSE A PLAYER TO SWAP SCORES WITH ").black().on_truecolor(255, 95, 31));
+                    
+                    'outer: loop {
+                        // take input
+                        let mut input = String::new();
+                        io::stdin().read_line(&mut input).expect("cannot");
+                        let swap_victim = input.trim();
 
+                        //see if input matches any player names
+                        let mut s = 0;
+                        'inner: loop {
+                            let cur = pvec[s].name.to_owned();
+                            match swap_victim {
+                                // valid victim
+                                x if x == cur => {
+                                    println!("{}{}{}", pvec[i].name.to_ascii_uppercase().truecolor(255, 95, 23).bold(), (" swapped scores with ").truecolor(255, 95, 23).dimmed(), pvec[s].name.to_ascii_uppercase().truecolor(255, 95, 23).bold());
+                                    println!("{}", ("check scoreboard :)"));
+                                    let (mut a, mut b) = (pvec[i].score, pvec[s].score);
+
+                                    mem::swap(&mut a, &mut b);
+
+                                    break 'outer
+                                }
+                                _ => s += 1,
+                            }
+                            if s == p_num.try_into().unwrap() {
+                                println!("{}", ("please choose valid target").dimmed().italic().truecolor(255, 95, 23));
+                                break 'inner;
+                            }
+                        } // inner end
+                    } // outer end
+                }
+                        
                 (_, _) => println!("{}", ("invalid command").dimmed().italic()),
             }
         }
