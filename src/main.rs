@@ -20,6 +20,12 @@ use strum_macros::EnumIter;
 // use other values to buffer?
 // use std::mem::swap?
 
+// 10-1 TODO
+// mario kart:
+// rank items by power, make powerful items rarer
+// powerful items can only be rolled by last place characters
+
+
 #[derive(Debug, Clone, Default)]
 pub struct Player {
     name: String,
@@ -185,7 +191,7 @@ fn main() {
     // change p string into and i32 so we can see how many players to create
     let p_num: i32 = p_string.parse().unwrap();
     // create empty vec to hold players
-    let mut pvec: Vec<Player> = Vec::new();
+    let mut players: Vec<Player> = Vec::new();
     // high score
     let mut high_score: Vec<Player> = vec![set_player("Tony".to_string())];
 
@@ -211,7 +217,7 @@ fn main() {
         }
 
         // push each player in
-        pvec.push(player);
+        players.push(player);
 
         if i >= p_num {
             break;
@@ -283,7 +289,7 @@ fn main() {
         // roll message
         println!(
             "\n\n{}{}\n",
-            pvec[i]
+            players[i]
                 .name
                 .to_ascii_uppercase()
                 .bold()
@@ -308,7 +314,7 @@ fn main() {
                 .expect("cant read that");
 
             // match input values to commands
-            match (keyboard_roll.trim(), pvec[i].items) {
+            match (keyboard_roll.trim(), players[i].items) {
                 // see high score
                 ("hs", _) => {
                     println!("\n{}", ("HIGH SCORE").bright_green().blink());
@@ -344,31 +350,31 @@ fn main() {
 
                         match prize.trim() {
                             "evil" => {
-                                pvec[i].items = Items::EvilDice;
+                                players[i].items = Items::EvilDice;
                                 break;
                             }
                             "even" => {
-                                pvec[i].items = Items::EvenOdd;
+                                players[i].items = Items::EvenOdd;
                                 break;
                             }
                             "leech" => {
-                                pvec[i].items = Items::LeechDice;
+                                players[i].items = Items::LeechDice;
                                 break;
                             }
                             "mega" => {
-                                pvec[i].items = Items::MegaDice;
+                                players[i].items = Items::MegaDice;
                                 break;
                             }
                             "swap" => {
-                                pvec[i].items = Items::ScoreSwap;
+                                players[i].items = Items::ScoreSwap;
                                 break;
                             }
                             "triple" => {
-                                pvec[i].items = Items::TripleDice;
+                                players[i].items = Items::TripleDice;
                                 break;
                             }
                             "yoink" => {
-                                pvec[i].items = Items::Yoink;
+                                players[i].items = Items::Yoink;
                                 break;
                             }
                             _ => {
@@ -379,9 +385,9 @@ fn main() {
                     }
                     println!(
                         "{}{}{:?}",
-                        pvec[i].name.truecolor(9, 110, 21),
+                        players[i].name.truecolor(9, 110, 21),
                         (" received ").truecolor(9, 110, 91),
-                        pvec[i]
+                        players[i]
                             .items
                             .truecolor(255, 255, 77)
                             .on_truecolor(9, 110, 21)
@@ -390,7 +396,7 @@ fn main() {
                 ("q", _) => {
                     println!(
                         "{}{}",
-                        pvec[i].name.bright_blue(),
+                        players[i].name.bright_blue(),
                         (" ended their turn").italic().dimmed()
                     );
                     println!(
@@ -399,8 +405,8 @@ fn main() {
                         turn_scores[i].italic().bright_green(),
                         ("pts").italic().bright_green()
                     );
-                    pvec[i].turn_count += 1;
-                    pvec[i].score += turn_scores[i];
+                    players[i].turn_count += 1;
+                    players[i].score += turn_scores[i];
                     break 'turn;
                 }
                 //auto roll
@@ -421,11 +427,11 @@ fn main() {
                 ("i", _) => {
                     println!(
                         "\n{}{}",
-                        pvec[i].name.cyan().dimmed(),
+                        players[i].name.cyan().dimmed(),
                         ("'s BAG").cyan().dimmed()
                     );
-                    print!("{:?}\n", pvec[i].items.bright_blue());
-                    match pvec[i].items {
+                    print!("{:?}\n", players[i].items.bright_blue());
+                    match players[i].items {
                         Items::Nothing => println!("{}", ("roll secret number to get items\nsecret number is a random number from 1-6\nit changes for every roll\n").cyan().dimmed()),
                         Items::MegaDice => println!(
                             "{}{}{}\n",
@@ -480,7 +486,7 @@ fn main() {
                     }
                     println!("\n{}", ("OTHER ITEMS").bright_magenta().dimmed());
 
-                    let equipped = pvec[i].items;
+                    let equipped = players[i].items;
                     for i in Items::iter() {
                         if i != equipped {
                             println!("{:?}", (i).bright_magenta().bold())
@@ -490,7 +496,7 @@ fn main() {
                 }
                 //show scoreboard
                 ("s", _) => {
-                    for i in pvec.iter() {
+                    for i in players.iter() {
                         println!("{}", i.name.to_ascii_uppercase().bright_cyan());
                         println!(
                             "{} {} {} {:?}",
@@ -516,9 +522,9 @@ fn main() {
                         //snake eyes
                         (1, 1) => {
                             println!("\n{}", ("  SNAKE EYES  ").on_bright_magenta());
-                            pvec[i].score *= 0;
+                            players[i].score *= 0;
                             println!("{}", ("TOTAL SCORE 0").red());
-                            pvec[i].turn_count += 1;
+                            players[i].turn_count += 1;
                             break 'turn;
                         }
                         //roll a 1
@@ -526,8 +532,8 @@ fn main() {
                             println!("\n{}", random_ones[index]);
                             println!("{}", ("ROLLED A 1!").dimmed());
                             println!("{}", ("TURN COMPLETE").red());
-                            println!("{} {}", ("TOTAL SCORE").blue(), pvec[i].score);
-                            pvec[i].turn_count += 1;
+                            println!("{} {}", ("TOTAL SCORE").blue(), players[i].score);
+                            players[i].turn_count += 1;
                             break 'turn;
                         }
                         // roll doubles
@@ -547,11 +553,11 @@ fn main() {
                             println!("{}", ("secret number rolled!").italic().dimmed());
                             println!(
                                 "{}{}{:?}",
-                                pvec[i].name.to_ascii_uppercase().bright_green().bold(),
+                                players[i].name.to_ascii_uppercase().bright_green().bold(),
                                 (" picked up ").bright_cyan(),
                                 random_item.bright_magenta().bold()
                             );
-                            pvec[i].items = random_item;
+                            players[i].items = random_item;
                             turn_scores[i] += r1 + r2;
                             println!("{}{}\n", ("turn score:").dimmed(), turn_scores[i].green(),);
                         }
@@ -562,13 +568,13 @@ fn main() {
                             let mut prize = String::new();
                             io::stdin().read_line(&mut prize).expect("cant");
                             match prize.trim() {
-                                "evildice" => pvec[i].items = Items::EvilDice,
-                                "evenodd" => pvec[i].items = Items::EvenOdd,
-                                "leechdice" => pvec[i].items = Items::LeechDice,
-                                "megadice" => pvec[i].items = Items::MegaDice,
-                                "scoreswap" => pvec[i].items = Items::ScoreSwap,
-                                "tripledice" => pvec[i].items = Items::TripleDice,
-                                "yoink" => pvec[i].items = Items::Yoink,
+                                "evildice" => players[i].items = Items::EvilDice,
+                                "evenodd" => players[i].items = Items::EvenOdd,
+                                "leechdice" => players[i].items = Items::LeechDice,
+                                "megadice" => players[i].items = Items::MegaDice,
+                                "scoreswap" => players[i].items = Items::ScoreSwap,
+                                "tripledice" => players[i].items = Items::TripleDice,
+                                "yoink" => players[i].items = Items::Yoink,
                                 _ => println!("{}", ("enter item name").italic().dimmed()),
                             }
                         }
@@ -581,13 +587,13 @@ fn main() {
                 }
 
                 //give items
-                ("e", _) => pvec[i].items = Items::EvilDice,
-                ("eo", _) => pvec[i].items = Items::EvenOdd,
-                ("l", _) => pvec[i].items = Items::LeechDice,
-                ("m", _) => pvec[i].items = Items::MegaDice,
-                ("ss", _) => pvec[i].items = Items::ScoreSwap,
-                ("t", _) => pvec[i].items = Items::TripleDice,
-                ("y", _) => pvec[i].items = Items::Yoink,
+                ("e", _) => players[i].items = Items::EvilDice,
+                ("eo", _) => players[i].items = Items::EvenOdd,
+                ("l", _) => players[i].items = Items::LeechDice,
+                ("m", _) => players[i].items = Items::MegaDice,
+                ("ss", _) => players[i].items = Items::ScoreSwap,
+                ("t", _) => players[i].items = Items::TripleDice,
+                ("y", _) => players[i].items = Items::Yoink,
 
                 //dont have items
                 ("evil", item) if item != Items::EvilDice => {
@@ -622,7 +628,7 @@ fn main() {
                 // implement all items !!!
                 ("triple", Items::TripleDice) => {
                     // use tripleDice
-                    pvec[i].items = Items::Nothing;
+                    players[i].items = Items::Nothing;
                     // 🎲🎲 print roll
                     println!(
                         "\n{} + {} + {} = {}\n",
@@ -640,9 +646,9 @@ fn main() {
                                 ("\nYou rolled the mythical"),
                                 (" THREE EYED SNAKE ")
                             );
-                            pvec[i].score *= 0;
-                            print!("{}{}{}", ("you now have "), pvec[i].score, ("pts"));
-                            pvec[i].turn_count += 1
+                            players[i].score *= 0;
+                            print!("{}{}{}", ("you now have "), players[i].score, ("pts"));
+                            players[i].turn_count += 1
                         }
                         // two ones
                         (1, 1, _) => {
@@ -650,8 +656,8 @@ fn main() {
                             println!("{}", ("ROLLED TWO 1's").dimmed());
                             println!("{}", ("TURN COMPLETE").red().dimmed());
                             println!("{}", ("+0pts").red());
-                            println!("{} {}", ("TOTAL SCORE").blue(), pvec[i].score);
-                            pvec[i].turn_count += 1;
+                            println!("{} {}", ("TOTAL SCORE").blue(), players[i].score);
+                            players[i].turn_count += 1;
                             break 'turn;
                         }
                         // two ones
@@ -660,8 +666,8 @@ fn main() {
                             println!("{}", ("ROLLED TWO 1's").dimmed());
                             println!("{}", ("TURN COMPLETE").red().dimmed());
                             println!("{}", ("+0pts").red());
-                            println!("{} {}", ("TOTAL SCORE").blue(), pvec[i].score);
-                            pvec[i].turn_count += 1;
+                            println!("{} {}", ("TOTAL SCORE").blue(), players[i].score);
+                            players[i].turn_count += 1;
                             break 'turn;
                         }
                         // two ones
@@ -670,8 +676,8 @@ fn main() {
                             println!("{}", ("ROLLED TWO 1's").dimmed());
                             println!("{}", ("TURN COMPLETE").red().dimmed());
                             println!("{}", ("+0pts").red());
-                            println!("{} {}", ("TOTAL SCORE").blue(), pvec[i].score);
-                            pvec[i].turn_count += 1;
+                            println!("{} {}", ("TOTAL SCORE").blue(), players[i].score);
+                            players[i].turn_count += 1;
                             break 'turn;
                         }
                         // triples
@@ -772,7 +778,7 @@ fn main() {
                 ("evil", Items::EvilDice) => {
                     println!(
                         "\n{}{}{}",
-                        pvec[i].name.to_ascii_uppercase().on_red().bold(),
+                        players[i].name.to_ascii_uppercase().on_red().bold(),
                         (" rolled the ").red(),
                         ("EVIL DICE").red().bold().blink()
                     );
@@ -785,7 +791,7 @@ fn main() {
                         (r1 + r2).bright_red()
                     );
                     // use item
-                    pvec[i].items = Items::Nothing;
+                    players[i].items = Items::Nothing;
                     let evil_score = r1 + r2 + r1 + r2;
                     println!(
                         "{}{}{}{}{}",
@@ -793,14 +799,14 @@ fn main() {
                         evil_score.red().blink().bold(),
                         ("pts").red().bold().blink(),
                         (" for everyone except ").red(),
-                        pvec[i].name.to_ascii_uppercase().on_red().bold()
+                        players[i].name.to_ascii_uppercase().on_red().bold()
                     );
                     turn_scores[i] += evil_score;
                     // pnum - 1 so the index wont go out of bounds
 
                     let mut e: usize = 0;
                     loop {
-                        pvec[e].score -= evil_score;
+                        players[e].score -= evil_score;
                         if e == (p_num - 1).try_into().unwrap() {
                             break;
                         }
@@ -811,12 +817,12 @@ fn main() {
                     {
                         println!(
                             "{}{}{}",
-                            pvec[i].name.to_ascii_uppercase().on_bright_cyan().bold(),
+                            players[i].name.to_ascii_uppercase().on_bright_cyan().bold(),
                             (" rolled the ").bright_cyan(),
                             ("MEGA DICE").bright_cyan().bold().blink()
                         );
                         // use MEGADICE
-                        pvec[i].items = Items::Nothing;
+                        players[i].items = Items::Nothing;
                         // 🎲🎲 print roll
                         println!(
                             "\n{} + {} = {}\n",
@@ -828,9 +834,9 @@ fn main() {
                         //snake eyes
                         (1, 1) => {
                             println!("\n{}", ("  SNAKE EYES  ").on_bright_magenta());
-                            pvec[i].score *= 0;
+                            players[i].score *= 0;
                             println!("{}", ("TOTAL SCORE 0").red());
-                            pvec[i].turn_count += 1;
+                            players[i].turn_count += 1;
                             break 'turn
                             },
                         //roll 1
@@ -839,8 +845,8 @@ fn main() {
                             println!("\n{}", random_ones[index]);
                             println!("{}", ("ROLLED A 1!").dimmed());
                             println!("{}", ("TURN COMPLETE").red());
-                            println!("{} {}", ("TOTAL SCORE").blue(), pvec[i].score);
-                            pvec[i].turn_count += 1;
+                            println!("{} {}", ("TOTAL SCORE").blue(), players[i].score);
+                            players[i].turn_count += 1;
                             break 'turn
                         }
                         (j, k) if j == k => {
@@ -874,7 +880,7 @@ fn main() {
                 }
                 ("leech", Items::LeechDice) => {
                     // use item
-                    pvec[i].items = Items::Nothing;
+                    players[i].items = Items::Nothing;
 
                     // ask player for answer
                     // compare that answer with every player name
@@ -892,13 +898,13 @@ fn main() {
                         // loop to see if input matches any players
                         let mut n = 0;
                         'inner: loop {
-                            let cur = pvec[n].name.to_owned();
+                            let cur = players[n].name.to_owned();
                             match victim {
                                 // valid leech victim
                                 x if x == cur => {
                                     println!(
                                         "\n{}{}{}",
-                                        pvec[i].name.to_ascii_uppercase().purple(),
+                                        players[i].name.to_ascii_uppercase().purple(),
                                         (" chose ").purple().dimmed(),
                                         cur.to_ascii_uppercase().purple()
                                     );
@@ -946,12 +952,12 @@ fn main() {
                                                             ("will be leeched from ")
                                                                 .purple()
                                                                 .dimmed(),
-                                                            pvec[i].name.to_ascii_uppercase().purple().bold(),
+                                                            players[i].name.to_ascii_uppercase().purple().bold(),
                                                             (" and given to ").purple().dimmed(),
                                                             cur.to_ascii_uppercase().purple().bold()
                                                         );
-                                                        pvec[i].score -= pts_stolen;
-                                                        pvec[n].score += pts_stolen;
+                                                        players[i].score -= pts_stolen;
+                                                        players[n].score += pts_stolen;
                                                     }
                                                     x if x <= 3 => {
                                                         println!(
@@ -963,10 +969,10 @@ fn main() {
                                                                 .dimmed(),
                                                             cur.to_ascii_uppercase().purple().bold(),
                                                             (" and given to ").purple().dimmed(),
-                                                            pvec[i].name.to_ascii_uppercase().purple().bold()
+                                                            players[i].name.to_ascii_uppercase().purple().bold()
                                                         );
-                                                        pvec[i].score += pts_stolen;
-                                                        pvec[n].score -= pts_stolen;
+                                                        players[i].score += pts_stolen;
+                                                        players[n].score -= pts_stolen;
                                                     }
                                                     _ => (),
                                                 }
@@ -988,7 +994,7 @@ fn main() {
                                                 );
                                                 println!(
                                                     "{}{}{}{}{}{}\n",
-                                                    pvec[i]
+                                                    players[i]
                                                         .name
                                                         .to_ascii_uppercase()
                                                         .purple()
@@ -999,8 +1005,8 @@ fn main() {
                                                     (" from ").purple(),
                                                     cur.to_ascii_uppercase().purple().bold()
                                                 );
-                                                pvec[i].score += r1 + r2;
-                                                pvec[n].score -= r1 + r2;
+                                                players[i].score += r1 + r2;
+                                                players[n].score -= r1 + r2;
                                                 break;
                                             }
                                             _ => println!(
@@ -1120,13 +1126,13 @@ fn main() {
                         multi.bright_green().blink_fast().bold()
                     );
                     turn_scores[i] += multi;
-                    pvec[i].items = Items::Nothing;
+                    players[i].items = Items::Nothing;
                     println!("{}", ("Keep Rolling\n").dimmed().italic())
                 }
                 ("swap", Items::ScoreSwap) => {
                     println!("{}", (" UNDER CONSTRUCTION check back later").on_bright_red().bold())
                     // use item
-                    pvec[i].items = Items::Nothing;
+                    players[i].items = Items::Nothing;
                     // println!("{}", (" CHOOSE A PLAYER TO SWAP SCORES WITH ").black().on_truecolor(255, 95, 31));
                     
                     // 'outer: loop {
@@ -1139,19 +1145,19 @@ fn main() {
                     //     let mut s = 0;
                     //     'inner: loop {
                     //         // init variable to hold current player
-                    //         let cur = pvec[s].name.to_owned();
+                    //         let cur = players[s].name.to_owned();
                     //         match swap_victim {
                     //             // valid victim
                     //             x if x == cur => {
-                    //                 println!("{}{}{}", pvec[i].name.to_ascii_uppercase().truecolor(255, 95, 23).bold(), (" swapped scores with ").truecolor(255, 95, 23).dimmed(), pvec[s].name.to_ascii_uppercase().truecolor(255, 95, 23).bold());
+                    //                 println!("{}{}{}", players[i].name.to_ascii_uppercase().truecolor(255, 95, 23).bold(), (" swapped scores with ").truecolor(255, 95, 23).dimmed(), players[s].name.to_ascii_uppercase().truecolor(255, 95, 23).bold());
                     //                 println!("{}", ("check scoreboard :)"));
 
                     //                 //swap scores | score swap
-                    //                 let (mut a, mut b) = (pvec[i].score, pvec[s].score);
+                    //                 let (mut a, mut b) = (players[i].score, players[s].score);
 
                     //                 mem::swap(&mut a, &mut b);
-                    //                 println!("{}{}{}{}", pvec[i].name, (" now has "), pvec[i].score, ("pts"));
-                    //                 println!("{}{}{}{}", pvec[s].name, (" now has "), pvec[s].score, ("pts"));
+                    //                 println!("{}{}{}{}", players[i].name, (" now has "), players[i].score, ("pts"));
+                    //                 println!("{}{}{}{}", players[s].name, (" now has "), players[s].score, ("pts"));
                                     
                     //                 break 'outer
                     //             }
@@ -1170,8 +1176,8 @@ fn main() {
                 }
                 ("yoink", Items::Yoink) => {
                     println!("{}{}", (" UNDER CONSTRUCTION ").white().on_yellow().bold(), (" check back later").dimmed().italic());
-                    pvec[i].items = Items::Nothing;
-                    // println!("{}{}{}", pvec[i].name.to_ascii_uppercase().on_truecolor(251, 72, 196).bold(), (" used ").truecolor(251, 72, 196), ("YOINK").truecolor(251, 72, 196).bold().blink());
+                    players[i].items = Items::Nothing;
+                    // println!("{}{}{}", players[i].name.to_ascii_uppercase().on_truecolor(251, 72, 196).bold(), (" used ").truecolor(251, 72, 196), ("YOINK").truecolor(251, 72, 196).bold().blink());
                     // println!("{}", (" SELECT A PLAYER TO STEAL AN ITEM FROM ").on_truecolor(251, 72, 196).bold());
                     // 'outer: loop {
                     //     let mut input = String::new();
@@ -1180,8 +1186,8 @@ fn main() {
 
                     //     let mut y = 0;
                     //     'target: loop {
-                    //         let cur = pvec[y].name.to_owned();
-                    //         let cur_item = pvec[y].items.to_owned();
+                    //         let cur = players[y].name.to_owned();
+                    //         let cur_item = players[y].items.to_owned();
                     //         match (target, cur_item) {
                     //             ("none", _) => {println!("{}", ("no one was yoinked").dimmed().italic().truecolor(251, 72, 196));break 'outer}
                     //             (x, Items::Nothing) if x == cur => {
@@ -1212,8 +1218,8 @@ fn main() {
         // temp changed to 30 so i can test the end game in terminal
 
         // if last player wins then this loop is unessecary
-        if pvec[i].score >= TARGET {
-            println!("\nCONGRATS {}!", (pvec[i].name).bright_green());
+        if players[i].score >= TARGET {
+            println!("\nCONGRATS {}!", (players[i].name).bright_green());
             println!("\n🏆🥇YOU WON🥇🏆");
 
             // if it is the last player the game ends
@@ -1225,28 +1231,28 @@ fn main() {
                 println!(
                     "{}{}{}",
                     ("You won in ").bright_cyan().dimmed(),
-                    (pvec[i].turn_count).bright_cyan(),
+                    (players[i].turn_count).bright_cyan(),
                     (" turns.").bright_cyan().dimmed()
                 );
                 println!(
                     "{}{}{}",
                     ("all players who have not had ").bright_cyan().dimmed(),
-                    (pvec[i].turn_count).bright_cyan(),
+                    (players[i].turn_count).bright_cyan(),
                     (" turns get one last chance to beat your score!")
                         .bright_cyan()
                         .dimmed()
                 );
 
                 // create a new vector for the final players
-                let total_turns_minus_one = pvec[i].turn_count - 1;
-                let cloned_pvec = pvec.clone();
-                let mut final_round_players = last_turns(cloned_pvec, total_turns_minus_one);
+                let total_turns_minus_one = players[i].turn_count - 1;
+                let cloned_players = players.clone();
+                let mut final_round_players = last_turns(cloned_players, total_turns_minus_one);
                 for i in final_round_players.iter() {
                     println!("{}", i.name.trim().bright_red())
                 }
 
                 // create a vec of the player w the highest score
-                let mut high_scores: Vec<Player> = vec![pvec[i].clone()];
+                let mut high_scores: Vec<Player> = vec![players[i].clone()];
                 let mut v: usize = 0;
                 loop {
                     'final_turn: loop {
@@ -1259,7 +1265,7 @@ fn main() {
                             println!(
                                 "{} you've passed {}'s score",
                                 final_round_players[v].name.trim().bold().on_cyan(),
-                                pvec[i].name.trim().bold().on_bright_magenta()
+                                players[i].name.trim().bold().on_bright_magenta()
                             );
                             high_scores.pop();
                             high_scores.push(final_round_players[v].clone());
@@ -1370,11 +1376,11 @@ fn main() {
                                 // remember to let players win on last round
                             } else {
                                 final_round_players[v].score += roll1 + roll2;
-                                if final_round_players[v].score > pvec[i].score {
+                                if final_round_players[v].score > players[i].score {
                                     println!(
                                         "{} you have surpassed {}'s score",
                                         final_round_players[v].name.trim().bold().on_cyan(),
-                                        pvec[i].name.trim().bold().on_bright_magenta()
+                                        players[i].name.trim().bold().on_bright_magenta()
                                     );
                                     high_scores.pop();
                                     high_scores.push(final_round_players[v].clone());
@@ -1412,15 +1418,15 @@ fn main() {
         }
 
         // check high score
-        match (pvec[i].score, high_score[0].score) {
+        match (players[i].score, high_score[0].score) {
             (x, y) if x > y => {
                 high_score.pop();
-                high_score.push(pvec[i].clone());
+                high_score.push(players[i].clone());
                 println!(
                     "{}{}{}",
-                    pvec[i].name.bright_cyan(),
+                    players[i].name.bright_cyan(),
                     (" has set the new high score at ").cyan().dimmed(),
-                    pvec[i].score.bright_cyan().bold()
+                    players[i].score.bright_cyan().bold()
                 )
             }
             _ => (),
