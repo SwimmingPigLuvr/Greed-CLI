@@ -31,24 +31,20 @@ pub struct Player {
     name: String,
     score: i32,
     turn_count: i32,
-    items: Items,
+    evil_items: EvilItems,
+    good_items: GoodItems,
 }
 
 const TARGET: i32 = 100;
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, Copy, Default)]
-pub enum Items {
-    /// roll dice values of 1-10
-    MegaDice,
-    /// roll 3 dice
-    TripleDice,
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, Copy, Default, Ord, PartialOrd)]
+pub enum EvilItems {
     /// leech points from another player
     LeechDice,
     /// subtract from everyone elses scores, you gain no points
     EvilDice,
     /// chance to double or quadruple roll
-    EvenOdd,
-    /// trade scores with another player
+    
     ScoreSwap,
     /// yoink an item from player
     Yoink,
@@ -57,16 +53,36 @@ pub enum Items {
     Nothing,
 }
 
-impl Distribution<Items> for Standard {
-    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Items {
-        match rng.gen_range(0..=7) {
-            0 => Items::MegaDice,
-            1 => Items::TripleDice,
-            2 => Items::LeechDice,
-            3 => Items::EvilDice,
-            4 => Items::EvenOdd,
-            5 => Items::ScoreSwap,
-            _ => Items::Yoink,
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, Copy, Default, Ord, PartialOrd)]
+pub enum GoodItems {
+    /// roll dice values of 1-10
+    MegaDice,
+    /// roll 3 dice
+    TripleDice,
+    /// leech points from another player
+    EvenOdd,
+    /// trade scores with another player
+    #[default]
+    Nothing,
+}
+
+impl Distribution<EvilItems> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> EvilItems {
+        match rng.gen_range(0..=4) {
+            0 => EvilItems::Yoink,
+            1 => EvilItems::LeechDice,
+            2 => EvilItems::EvilDice,
+            _ => EvilItems::ScoreSwap,
+        }
+    }
+}
+
+impl Distribution<GoodItems> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> GoodItems {
+        match rng.gen_range(0..=3) {
+            0 => GoodItems::MegaDice,
+            1 => GoodItems::TripleDice,
+            _ => GoodItems::EvenOdd
         }
     }
 }
@@ -176,13 +192,15 @@ pub fn set_player(name: String) -> Player {
         name,
         score: 0,
         turn_count: 0,
-        items: Items::default(),
+        evil_items: EvilItems::default(),
+        good_items: GoodItems::default()
     }
 }
 
 fn main() {
     print_milady();
     print_instructions();
+
 
     // How many players?
     let mut p_string = String::new();
@@ -234,6 +252,10 @@ fn main() {
         thread_rng().gen_range(1..13)
     }
 
+    fn item_roll () -> i32 {
+        thread_rng().gen_range(1..101)
+    }
+    
     // vector of random prompts to spice it up
     let random_prompts: Vec<String> = vec![
         String::from(", ⌚ TIME TO ROLL"),
@@ -279,6 +301,8 @@ fn main() {
             .filter(|p| p.turn_count == turn_count)
             .collect()
     }
+    
+
 
     let mut i: usize = 0;
     'game: loop {
@@ -300,12 +324,13 @@ fn main() {
 
         'turn: loop {
             // intialize roll values
-            let mut r1 = dice_roll();
-            let mut r2 = dice_roll();
+            let r1 = dice_roll();
+            let r2 = dice_roll();
             let r3 = dice_roll();
             let m1 = mega_dice_roll();
             let m2 = mega_dice_roll();
             let secret_num = dice_roll();
+            let item_picker = item_roll();
 
             // get input
             let mut keyboard_roll = String::new();
@@ -314,86 +339,9 @@ fn main() {
                 .expect("cant read that");
 
             // match input values to commands
-            match (keyboard_roll.trim(), players[i].items) {
-                // see high score
-                ("hs", _) => {
-                    println!("\n{}", ("HIGH SCORE").bright_green().blink());
-                    println!(
-                        "{} {}\n",
-                        high_score[0]
-                            .name
-                            .to_ascii_uppercase()
-                            .on_bright_green()
-                            .bold(),
-                        high_score[0].score.bright_green().bold()
-                    )
-                }
-                // get double secret items and you can choose your item
-                ("secret", _) => {
-                    let r1 = secret_num;
-                    let r2 = secret_num;
-                    println!("{}", ("rolled secret number twice!").dimmed().italic());
-
-                    println!("{}\n", ("choose any item you'd like").italic().dimmed());
-                    println!("{}", ("OPTIONS").bright_green().dimmed());
-                    println!("{}", ("even").bright_green());
-                    println!("{}", ("evil").bright_green());
-                    println!("{}", ("leech").bright_green());
-                    println!("{}", ("mega").bright_green());
-                    println!("{}", ("swap").bright_green());
-                    println!("{}", ("triple").bright_green());
-                    println!("{}\n", ("yoink").bright_green());
-
-                    loop {
-                        let mut prize = String::new();
-                        io::stdin().read_line(&mut prize).expect("cant");
-
-                        match prize.trim() {
-                            "evil" => {
-                                players[i].items = Items::EvilDice;
-                                break;
-                            }
-                            "even" => {
-                                players[i].items = Items::EvenOdd;
-                                break;
-                            }
-                            "leech" => {
-                                players[i].items = Items::LeechDice;
-                                break;
-                            }
-                            "mega" => {
-                                players[i].items = Items::MegaDice;
-                                break;
-                            }
-                            "swap" => {
-                                players[i].items = Items::ScoreSwap;
-                                break;
-                            }
-                            "triple" => {
-                                players[i].items = Items::TripleDice;
-                                break;
-                            }
-                            "yoink" => {
-                                players[i].items = Items::Yoink;
-                                break;
-                            }
-                            _ => {
-                                println!("{}", ("enter item name").italic().dimmed());
-                                continue;
-                            }
-                        }
-                    }
-                    println!(
-                        "{}{}{:?}",
-                        players[i].name.truecolor(9, 110, 21),
-                        (" received ").truecolor(9, 110, 91),
-                        players[i]
-                            .items
-                            .truecolor(255, 255, 77)
-                            .on_truecolor(9, 110, 21)
-                    )
-                }
-                ("q", _) => {
+            
+            match (keyboard_roll.trim(), players[i].evil_items, players[i].good_items) {
+                ("q", _, _) => {
                     println!(
                         "{}{}",
                         players[i].name.bright_blue(),
@@ -410,7 +358,7 @@ fn main() {
                     break 'turn;
                 }
                 //auto roll
-                ("auto", _) => {
+                ("auto", _, _) => {
                     println!("{}", ("set auto roll amount").dimmed().italic());
                     let mut auto_roll = String::new();
                     io::stdin().read_line(&mut auto_roll).expect("cant");
@@ -424,58 +372,59 @@ fn main() {
                     );
                 }
                 //check items + descriptions
-                ("i", _) => {
+                ("i", _, _) => {
                     println!(
                         "\n{}{}",
                         players[i].name.cyan().dimmed(),
                         ("'s BAG").cyan().dimmed()
                     );
-                    print!("{:?}\n", players[i].items.bright_blue());
-                    match players[i].items {
-                        Items::Nothing => println!("{}", ("roll secret number to get items\nsecret number is a random number from 1-6\nit changes for every roll\n").cyan().dimmed()),
-                        Items::MegaDice => println!(
-                            "{}{}{}\n",
-                            ("command ").cyan().dimmed(),
+                    print!("{} {:?}", ("evil").red(), players[i].evil_items.bright_red());
+                    print!("\n{} {:?}\n", ("good").blue(), players[i].good_items.bright_blue());
+                    match (players[i].evil_items, players[i].good_items) {
+                        (EvilItems::Nothing, GoodItems::Nothing) => println!("{}", ("1 in 4 chance to earn an item everytime you roll").cyan().dimmed()),
+                        (_, GoodItems::MegaDice) => println!(
+                            "\n{}{}{}\n",
+                            ("command ").bright_magenta().dimmed(),
                             ("mega\n").bright_magenta(),
                             ("roll two 10-sided dice").cyan().dimmed()
                         ),
-                        Items::LeechDice => println!(
-                            "{}{}{}\n",
-                            ("command ").cyan().dimmed(),
+                        (EvilItems::LeechDice, _) => println!(
+                            "\n{}{}{}\n",
+                            ("command ").bright_magenta().dimmed(),
                             ("leech\n").bright_magenta(),
-                            ("dice values are doubled, \nsubtracted from the score of a chosen opponent, \n& given to the roller").cyan().dimmed()
+                            ("dice values are subtracted from the score of a chosen opponent\n& given to the roller").cyan().dimmed()
                         ),
-                        Items::EvenOdd=> println!(
-                            "{}{}{}{}{}{}\n",
-                            ("command ").cyan().dimmed(),
+                        (_, GoodItems::EvenOdd)=> println!(
+                            "\n{}{}{}{}{}{}\n",
+                            ("command ").bright_magenta().dimmed(),
                             ("even\n").bright_magenta(),
                             ("guess if first roll is even/odd").cyan().dimmed(),
                             ("\nguess if second roll is higher/lower than first roll").cyan().dimmed(),
                             ("\nget 1 right => dice values are doubled").cyan().dimmed(),
                             ("\nget 2 right => dice values are quadrupled").cyan().dimmed()
                         ),
-                        Items::Yoink => println!(
-                            "{}{}{}\n",
-                            ("command ").cyan().dimmed(),
+                        (EvilItems::Yoink, _) => println!(
+                            "\n{}{}{}\n",
+                            ("command ").bright_magenta().dimmed(),
                             ("yoink\n").bright_magenta(),
                             ("steal another player's item").cyan().dimmed()
                         ),
-                        Items::EvilDice => println!(
-                            "{}{}{}{}\n",
-                            ("command ").cyan().dimmed(),
+                        (EvilItems::EvilDice, _) => println!(
+                            "\n{}{}{}{}\n",
+                            ("command ").bright_magenta().dimmed(),
                             ("evil\n").bright_magenta(),
                             ("dice values are multiplied by 2").cyan().dimmed(),
                             ("\n& subtracted from all other players' scores").cyan().dimmed()
                         ),
-                        Items::ScoreSwap => println!(
-                            "{}{}{}\n",
-                            ("command ").cyan().dimmed(),
+                        (EvilItems::ScoreSwap, _) => println!(
+                            "\n{}{}{}\n",
+                            ("command ").bright_magenta().dimmed(),
                             ("score swap\n").bright_magenta(),
                             ("trade scores with an opponent").cyan().dimmed()
                         ),
-                        Items::TripleDice => println!(
-                            "{}{}{}{}{}{}{}",
-                            ("command ").cyan().dimmed(),
+                        (_, GoodItems::TripleDice) => println!(
+                            "\n{}{}{}{}{}{}{}",
+                            ("command ").bright_magenta().dimmed(),
                             ("triple\n").bright_magenta(),
                             ("roll 3 dice").cyan().dimmed(),
                             ("\nif you roll the same number 3 times, those numbers will be tripled").cyan().dimmed(),
@@ -486,30 +435,87 @@ fn main() {
                     }
                     println!("\n{}", ("OTHER ITEMS").bright_magenta().dimmed());
 
-                    let equipped = players[i].items;
-                    for i in Items::iter() {
+                    let Good_equipped = players[i].good_items;
+                    let equipped = players[i].evil_items;
+                    for i in EvilItems::iter() {
                         if i != equipped {
+                            println!("{:?}", (i).bright_magenta().bold())
+                        }
+                    }
+                    for i in GoodItems::iter() {
+                        if i != Good_equipped {
                             println!("{:?}", (i).bright_magenta().bold())
                         }
                     }
                     println!("");
                 }
                 //show scoreboard
-                ("s", _) => {
-                    for i in players.iter() {
-                        println!("{}", i.name.to_ascii_uppercase().bright_cyan());
-                        println!(
-                            "{} {} {} {:?}",
-                            ("score").bright_green().dimmed(),
-                            i.score.bright_green().bold(),
-                            ("items").bright_purple().dimmed(),
-                            i.items.bright_purple()
-                        )
+                ("s", _, _) => {
+
+                    // sort players by score
+                    let mut ranking = players.clone();
+                    // init last place index as usize
+                    let last: usize = ranking.len() - 1;
+                    ranking.sort_by(|a, b| b.score.cmp(&a.score));
+                    for i in ranking.iter() {
+                        match i.score {
+                            x if x == ranking[last].score => {
+                                    println!(
+                                        "{} {} {}", 
+                                        (" LAST! ").white().on_red().blink(), 
+                                        i.name.to_ascii_uppercase().bright_cyan(),
+                                        i.score.bright_green().bold(),
+                                    );
+                                    
+                            }
+                            x if x == ranking[0].score => {
+                                    println!("{} {} {}", ("1st").yellow().blink(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
+                                    
+                            }
+                            x if x == ranking[1].score => {
+                                    println!("{} {} {}", ("2nd").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
+                                    
+                            }
+                            
+                            x if x == ranking[2].score => {
+                                    println!("{} {} {}", ("3rd").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
+                                    
+                            }
+                            x if x == ranking[3].score => {
+                                    println!("{} {} {}", ("4th").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
+                                    
+                            }
+                            x if x == ranking[4].score => {
+                                    println!("{} {} {}", ("5th").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
+                                    
+                            }
+                            x if x == ranking[5].score => {
+                                    println!("{} {} {}", ("6th").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
+                                    
+                            }
+                            x if x == ranking[6].score => {
+                                    println!("{} {} {}", ("7th ").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
+                                    
+                            }
+                            x if x == ranking[7].score => {
+                                    println!("{} {} {}", ("8th").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
+                                    
+                            }
+                            x if x < 0 => {
+                                    println!("{} {} {}", i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold(), ("SAD").truecolor(233, 94, 70));
+                                    
+                            }
+                            _ => {
+                                    println!("{} {}", i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
+                                    
+                            }
+                        }
+                        
                     }
                     println!("\n")
                 }
                 //normal roll
-                ("r", _) => {
+                ("r", _, _) => {
                     // 🎲🎲 print roll
                     println!(
                         "\n{} + {} = {}\n",
@@ -547,88 +553,176 @@ fn main() {
                             );
                             println!("{} {}", ("TURN SCORE").dimmed(), turn_scores[i].green(),);
                         }
-                        // secret number
-                        (x, y) if x == secret_num || y == secret_num => {
-                            let random_item: Items = rand::random();
-                            println!("{}", ("secret number rolled!").italic().dimmed());
+                        
+                        //normal roll
+                        _ => {
+                            turn_scores[i] += r1 + r2;
+                            println!("{}{}\n", ("turn score:").dimmed(), turn_scores[i].green(),);
+                        }
+                    }
+                    
+                    // sort players by score
+                    let mut placement = players.clone();
+                    // init last place index as usize
+                    let last_place: usize = placement.len() - 1;
+                    let second_to_last: usize = placement.len() - 2;
+                    placement.sort_by(|a, b| b.score.cmp(&a.score));
+                    match (item_picker, players[i].name.to_owned()) {
+                        // first place had 1 in four chance to get weak item
+                        (76..=100, first) if first == placement[0].name => {
+                            // soft items
+                            let random_item: GoodItems = rand::random();
+                            println!("{}", ("found item!").italic().dimmed());
                             println!(
                                 "{}{}{:?}",
                                 players[i].name.to_ascii_uppercase().bright_green().bold(),
                                 (" picked up ").bright_cyan(),
                                 random_item.bright_magenta().bold()
                             );
-                            players[i].items = random_item;
-                            turn_scores[i] += r1 + r2;
-                            println!("{}{}\n", ("turn score:").dimmed(), turn_scores[i].green(),);
+                            players[i].good_items = random_item;
                         }
-                        // double secret number
-                        (x, y) if x == secret_num && y == secret_num => {
-                            println!("{}", ("rolled secret number twice!").dimmed().italic());
-                            println!("{}", ("choose any item you'd like").italic().dimmed());
-                            let mut prize = String::new();
-                            io::stdin().read_line(&mut prize).expect("cant");
-                            match prize.trim() {
-                                "evildice" => players[i].items = Items::EvilDice,
-                                "evenodd" => players[i].items = Items::EvenOdd,
-                                "leechdice" => players[i].items = Items::LeechDice,
-                                "megadice" => players[i].items = Items::MegaDice,
-                                "scoreswap" => players[i].items = Items::ScoreSwap,
-                                "tripledice" => players[i].items = Items::TripleDice,
-                                "yoink" => players[i].items = Items::Yoink,
-                                _ => println!("{}", ("enter item name").italic().dimmed()),
-                            }
+                        // 2nd place has 33% chance to get a good item
+                        (66..=100, second) if second == placement[1].name => {
+                            // soft items
+                            let random_item: GoodItems = rand::random();
+                            println!("{}", ("found item!").italic().dimmed());
+                            println!(
+                                "{}{}{:?}",
+                                players[i].name.to_ascii_uppercase().bright_green().bold(),
+                                (" picked up ").bright_cyan(),
+                                random_item.bright_magenta().bold()
+                            );
+                            players[i].good_items = random_item;
                         }
-                        //normal roll
-                        _ => {
-                            turn_scores[i] += r1 + r2;
-                            println!("{}{}\n", ("turn score:").dimmed(), turn_scores[i].green(),);
+
+                        // last place has 100% chance of getting item
+                        // last place has 50/50 chance to get weak items or strong items
+                        (1..=50, last) if last == placement[last_place].name => {
+                            // soft items
+                            let random_item: GoodItems = rand::random();
+                            println!("{}", ("found item!").italic().dimmed());
+                            println!(
+                                "{}{}{:?}",
+                                players[i].name.to_ascii_uppercase().bright_green().bold(),
+                                (" picked up ").bright_cyan(),
+                                random_item.bright_magenta().bold()
+                            );
+                            players[i].good_items = random_item;
                         }
-                    };
+
+                        (51..=100, last) if last == placement[last_place].name => {
+                            // powerful items
+                            let random_item: EvilItems = rand::random();
+                            println!("{}", ("found item!").italic().dimmed());
+                            println!(
+                                "{}{}{:?}",
+                                players[i].name.to_ascii_uppercase().bright_green().bold(),
+                                (" picked up ").bright_cyan(),
+                                random_item.bright_magenta().bold()
+                            );
+                            players[i].evil_items = random_item;
+                        }
+                        // 2nd to last has 50% chance to get good item
+                        (1..=50, second2last) if second2last == placement[second_to_last].name => {
+                            // soft items
+                            let random_item: GoodItems = rand::random();
+                            println!("{}", ("found item!").italic().dimmed());
+                            println!(
+                                "{}{}{:?}",
+                                players[i].name.to_ascii_uppercase().bright_green().bold(),
+                                (" picked up ").bright_cyan(),
+                                random_item.bright_magenta().bold()
+                            );
+                            players[i].good_items = random_item;
+                        }
+                        // 2nd to last has 33% chance of getting evil items
+                        (66..=100, second2last) if second2last == placement[second_to_last].name => {
+                            // powerful items
+                            let random_item: EvilItems = rand::random();
+                            println!("{}", ("found item!").italic().dimmed());
+                            println!(
+                                "{}{}{:?}",
+                                players[i].name.to_ascii_uppercase().bright_green().bold(),
+                                (" picked up ").bright_cyan(),
+                                random_item.bright_magenta().bold()
+                            );
+                            players[i].evil_items = random_item;
+                        }
+                        
+                        // everyone else
+                        // 10% evil / 33% good
+                        (1..=10, _) => {
+                            // powerful items
+                            let random_item: EvilItems = rand::random();
+                            println!("{}", ("found item!").italic().dimmed());
+                            println!(
+                                "{}{}{:?}",
+                                players[i].name.to_ascii_uppercase().bright_green().bold(),
+                                (" picked up ").bright_cyan(),
+                                random_item.bright_magenta().bold()
+                            );
+                            players[i].evil_items = random_item;
+                        }
+                        (66..=100, _) => {
+// soft items
+                            let random_item: GoodItems = rand::random();
+                            println!("{}", ("found item!").italic().dimmed());
+                            println!(
+                                "{}{}{:?}",
+                                players[i].name.to_ascii_uppercase().bright_green().bold(),
+                                (" picked up ").bright_cyan(),
+                                random_item.bright_magenta().bold()
+                            );
+                            players[i].good_items = random_item;
+                        }
+
+                        _ => {}
+                    }
                 }
 
                 //give items
-                ("e", _) => players[i].items = Items::EvilDice,
-                ("eo", _) => players[i].items = Items::EvenOdd,
-                ("l", _) => players[i].items = Items::LeechDice,
-                ("m", _) => players[i].items = Items::MegaDice,
-                ("ss", _) => players[i].items = Items::ScoreSwap,
-                ("t", _) => players[i].items = Items::TripleDice,
-                ("y", _) => players[i].items = Items::Yoink,
+                ("e", _, _) => players[i].evil_items = EvilItems::EvilDice,
+                ("eo", _, _) => players[i].good_items = GoodItems::EvenOdd,
+                ("l", _, _) => players[i].evil_items = EvilItems::LeechDice,
+                ("m", _, _) => players[i].good_items = GoodItems::MegaDice,
+                ("ss", _, _) => players[i].evil_items = EvilItems::ScoreSwap,
+                ("t", _, _) => players[i].good_items = GoodItems::TripleDice,
+                ("y", _, _) => players[i].evil_items = EvilItems::Yoink,
 
                 //dont have items
-                ("evil", item) if item != Items::EvilDice => {
-                    println!("{}{:?}", ("don't have ").dimmed().italic(), Items::EvilDice)
+                ("evil", item, _) if item != EvilItems::EvilDice => {
+                    println!("{}{:?}", ("don't have ").dimmed().italic(), EvilItems::EvilDice)
                 }
-                ("even", item) if item != Items::EvenOdd => {
-                    println!("{}{:?}", ("don't have ").dimmed().italic(), Items::EvenOdd)
+                ("even", _, item) if item != GoodItems::EvenOdd => {
+                    println!("{}{:?}", ("don't have ").dimmed().italic(), GoodItems::EvenOdd)
                 }
-                ("leech", item) if item != Items::LeechDice => println!(
+                ("leech", item, _) if item != EvilItems::LeechDice => println!(
                     "{}{:?}",
                     ("don't have ").dimmed().italic(),
-                    Items::LeechDice
+                    EvilItems::LeechDice
                 ),
-                ("mega", item) if item != Items::MegaDice => {
-                    println!("{}{:?}", ("don't have ").dimmed().italic(), Items::MegaDice)
+                ("mega", _, item) if item != GoodItems::MegaDice => {
+                    println!("{}{:?}", ("don't have ").dimmed().italic(), GoodItems::MegaDice)
                 }
-                ("score swap", item) if item != Items::ScoreSwap => println!(
+                ("score swap", item, _) if item != EvilItems::ScoreSwap => println!(
                     "{}{:?}",
                     ("don't have ").dimmed().italic(),
-                    Items::ScoreSwap
+                    EvilItems::ScoreSwap
                 ),
-                ("triple", item) if item != Items::TripleDice => println!(
+                ("triple", _, item) if item != GoodItems::TripleDice => println!(
                     "{}{:?}",
                     ("don't have ").dimmed().italic(),
-                    Items::TripleDice
+                    GoodItems::TripleDice
                 ),
-                ("yoink", item) if item != Items::Yoink => {
-                    println!("{}{:?}", ("don't have ").dimmed().italic(), Items::Yoink)
+                ("yoink", item, _) if item != EvilItems::Yoink => {
+                    println!("{}{:?}", ("don't have ").dimmed().italic(), EvilItems::Yoink)
                 }
                 //have item
 
                 // implement all items !!!
-                ("triple", Items::TripleDice) => {
+                ("triple", _, GoodItems::TripleDice) => {
                     // use tripleDice
-                    players[i].items = Items::Nothing;
+                    players[i].good_items = GoodItems::Nothing;
                     // 🎲🎲 print roll
                     println!(
                         "\n{} + {} + {} = {}\n",
@@ -775,7 +869,7 @@ fn main() {
                         }
                     }
                 }
-                ("evil", Items::EvilDice) => {
+                ("evil", EvilItems::EvilDice, _) => {
                     println!(
                         "\n{}{}{}",
                         players[i].name.to_ascii_uppercase().on_red().bold(),
@@ -791,7 +885,7 @@ fn main() {
                         (r1 + r2).bright_red()
                     );
                     // use item
-                    players[i].items = Items::Nothing;
+                    players[i].evil_items = EvilItems::Nothing;
                     let evil_score = r1 + r2 + r1 + r2;
                     println!(
                         "{}{}{}{}{}",
@@ -813,7 +907,7 @@ fn main() {
                         e += 1
                     }
                 }
-                ("mega", Items::MegaDice) => {
+                ("mega", _, GoodItems::MegaDice) => {
                     {
                         println!(
                             "{}{}{}",
@@ -822,7 +916,7 @@ fn main() {
                             ("MEGA DICE").bright_cyan().bold().blink()
                         );
                         // use MEGADICE
-                        players[i].items = Items::Nothing;
+                        players[i].good_items = GoodItems::Nothing;
                         // 🎲🎲 print roll
                         println!(
                             "\n{} + {} = {}\n",
@@ -860,7 +954,7 @@ fn main() {
                             );
 
                         },
-                        (6, 9) => {println!("{}", ("nice sunglasses emoji"));
+                        (6, 9) => {println!("{}", ("good_items sunglasses emoji"));
                             turn_scores[i] += m1 + m2
                     },
                         (3, 11) => {println!("{}", ("woah amber is the color of your energy")); turn_scores[i] += m1 + m2
@@ -878,9 +972,9 @@ fn main() {
                         }}
                     }
                 }
-                ("leech", Items::LeechDice) => {
+                ("leech", EvilItems::LeechDice, _) => {
                     // use item
-                    players[i].items = Items::Nothing;
+                    players[i].evil_items = EvilItems::Nothing;
 
                     // ask player for answer
                     // compare that answer with every player name
@@ -1034,7 +1128,7 @@ fn main() {
                     } /* end loop */
                 }
                 // add emojis in vim!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                ("even", Items::EvenOdd) => {
+                ("even", _, GoodItems::EvenOdd) => {
                     let mut pts: i32 = 0;
                     println!(
                         "{}",
@@ -1126,13 +1220,13 @@ fn main() {
                         multi.bright_green().blink_fast().bold()
                     );
                     turn_scores[i] += multi;
-                    players[i].items = Items::Nothing;
+                    players[i].good_items = GoodItems::Nothing;
                     println!("{}", ("Keep Rolling\n").dimmed().italic())
                 }
-                ("swap", Items::ScoreSwap) => {
-                    println!("{}", (" UNDER CONSTRUCTION check back later").on_bright_red().bold())
+                ("swap", EvilItems::ScoreSwap, _) => {
+                    println!("{}", (" UNDER CONSTRUCTION check back later ").on_bright_red().bold());
                     // use item
-                    players[i].items = Items::Nothing;
+                    players[i].evil_items = EvilItems::Nothing;
                     // println!("{}", (" CHOOSE A PLAYER TO SWAP SCORES WITH ").black().on_truecolor(255, 95, 31));
                     
                     // 'outer: loop {
@@ -1174,9 +1268,9 @@ fn main() {
 
                     // } // outer end
                 }
-                ("yoink", Items::Yoink) => {
+                ("yoink", EvilItems::Yoink, _) => {
                     println!("{}{}", (" UNDER CONSTRUCTION ").white().on_yellow().bold(), (" check back later").dimmed().italic());
-                    players[i].items = Items::Nothing;
+                    players[i].evil_items = EvilItems::Nothing;
                     // println!("{}{}{}", players[i].name.to_ascii_uppercase().on_truecolor(251, 72, 196).bold(), (" used ").truecolor(251, 72, 196), ("YOINK").truecolor(251, 72, 196).bold().blink());
                     // println!("{}", (" SELECT A PLAYER TO STEAL AN ITEM FROM ").on_truecolor(251, 72, 196).bold());
                     // 'outer: loop {
@@ -1207,7 +1301,7 @@ fn main() {
                     //     } //end target loop
                     // } //end loop
                 }
-                (_, _) => println!("{}", ("invalid command").dimmed().italic()),
+                (_, _, _) => println!("{}", ("invalid command").dimmed().italic()),
             }
         }
 
@@ -1220,7 +1314,8 @@ fn main() {
         // if last player wins then this loop is unessecary
         if players[i].score >= TARGET {
             println!("\nCONGRATS {}!", (players[i].name).bright_green());
-            println!("\n🏆🥇YOU WON🥇🏆");
+            println!("\n🏆🥇{}🥇🏆", (" YOU WON ").yellow().blink());
+            println!("{}{}{}", ("with ").yellow().dimmed(), players[i].score.yellow(), ("pts").yellow());
 
             // if it is the last player the game ends
             // beacuse everyone has had an equal number of turns
