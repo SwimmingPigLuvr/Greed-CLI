@@ -893,7 +893,7 @@ fn main() {
                         let mut n = 0;
                         'inner: loop {
                             let cur = pvec[n].name.to_owned();
-                            match victim.trim() {
+                            match victim {
                                 // valid leech victim
                                 x if x == cur => {
                                     println!(
@@ -1124,41 +1124,83 @@ fn main() {
                     println!("{}", ("Keep Rolling\n").dimmed().italic())
                 }
                 ("swap", Items::ScoreSwap) => {
+                    println!("{}", (" UNDER CONSTRUCTION check back later").on_bright_red().bold())
                     // use item
                     pvec[i].items = Items::Nothing;
-                    println!("{}", (" CHOOSE A PLAYER TO SWAP SCORES WITH ").black().on_truecolor(255, 95, 31));
+                    // println!("{}", (" CHOOSE A PLAYER TO SWAP SCORES WITH ").black().on_truecolor(255, 95, 31));
                     
-                    'outer: loop {
-                        // take input
-                        let mut input = String::new();
-                        io::stdin().read_line(&mut input).expect("cannot");
-                        let swap_victim = input.trim();
+                    // 'outer: loop {
+                    //     // take input
+                    //     let mut input = String::new();
+                    //     io::stdin().read_line(&mut input).expect("cannot");
+                    //     let swap_victim = input.trim();
 
-                        //see if input matches any player names
-                        let mut s = 0;
-                        'inner: loop {
-                            let cur = pvec[s].name.to_owned();
-                            match swap_victim {
-                                // valid victim
-                                x if x == cur => {
-                                    println!("{}{}{}", pvec[i].name.to_ascii_uppercase().truecolor(255, 95, 23).bold(), (" swapped scores with ").truecolor(255, 95, 23).dimmed(), pvec[s].name.to_ascii_uppercase().truecolor(255, 95, 23).bold());
-                                    println!("{}", ("check scoreboard :)"));
-                                    let (mut a, mut b) = (pvec[i].score, pvec[s].score);
+                    //     //see if input matches any player names
+                    //     let mut s = 0;
+                    //     'inner: loop {
+                    //         // init variable to hold current player
+                    //         let cur = pvec[s].name.to_owned();
+                    //         match swap_victim {
+                    //             // valid victim
+                    //             x if x == cur => {
+                    //                 println!("{}{}{}", pvec[i].name.to_ascii_uppercase().truecolor(255, 95, 23).bold(), (" swapped scores with ").truecolor(255, 95, 23).dimmed(), pvec[s].name.to_ascii_uppercase().truecolor(255, 95, 23).bold());
+                    //                 println!("{}", ("check scoreboard :)"));
 
-                                    mem::swap(&mut a, &mut b);
+                    //                 //swap scores | score swap
+                    //                 let (mut a, mut b) = (pvec[i].score, pvec[s].score);
 
-                                    break 'outer
-                                }
-                                _ => s += 1,
-                            }
-                            if s == p_num.try_into().unwrap() {
-                                println!("{}", ("please choose valid target").dimmed().italic().truecolor(255, 95, 23));
-                                break 'inner;
-                            }
-                        } // inner end
-                    } // outer end
-                }
+                    //                 mem::swap(&mut a, &mut b);
+                    //                 println!("{}{}{}{}", pvec[i].name, (" now has "), pvec[i].score, ("pts"));
+                    //                 println!("{}{}{}{}", pvec[s].name, (" now has "), pvec[s].score, ("pts"));
+                                    
+                    //                 break 'outer
+                    //             }
+                    //             _ => s += 1,
+                    //         }
+                    //         if s == p_num.try_into().unwrap() {
+                    //             println!("{}", ("please choose valid target").dimmed().italic().truecolor(255, 95, 23));
+                    //             break 'inner;
+                    //         }
+                            
+                            
+                    //     } // inner end
                         
+
+                    // } // outer end
+                }
+                ("yoink", Items::Yoink) => {
+                    println!("{}{}", (" UNDER CONSTRUCTION ").white().on_yellow().bold(), (" check back later").dimmed().italic());
+                    pvec[i].items = Items::Nothing;
+                    // println!("{}{}{}", pvec[i].name.to_ascii_uppercase().on_truecolor(251, 72, 196).bold(), (" used ").truecolor(251, 72, 196), ("YOINK").truecolor(251, 72, 196).bold().blink());
+                    // println!("{}", (" SELECT A PLAYER TO STEAL AN ITEM FROM ").on_truecolor(251, 72, 196).bold());
+                    // 'outer: loop {
+                    //     let mut input = String::new();
+                    //     io::stdin().read_line(&mut input).expect("cant");
+                    //     let target = input.trim();
+
+                    //     let mut y = 0;
+                    //     'target: loop {
+                    //         let cur = pvec[y].name.to_owned();
+                    //         let cur_item = pvec[y].items.to_owned();
+                    //         match (target, cur_item) {
+                    //             ("none", _) => {println!("{}", ("no one was yoinked").dimmed().italic().truecolor(251, 72, 196));break 'outer}
+                    //             (x, Items::Nothing) if x == cur => {
+                    //                 println!("{}", ("no items to steal"));
+                    //                 break 'target
+                    //             }
+                    //             (x, _) if x == cur => {
+                    //                 println!("get yoinked son");
+                    //                 break 'outer
+                    //             }
+                    //             _ => y += 1
+                    //         }
+                    //         if y == p_num.try_into().unwrap() {
+                    //             println!("{}", ("please choose valid target or 'none'").dimmed().italic());
+                    //             break 'target
+                    //         }
+                    //     } //end target loop
+                    // } //end loop
+                }
                 (_, _) => println!("{}", ("invalid command").dimmed().italic()),
             }
         }
