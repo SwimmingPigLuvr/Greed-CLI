@@ -4,29 +4,18 @@ use rand::{
     distributions::{Distribution, Standard},
     Rng,
 };
-use std::mem;
 use std::borrow::Borrow;
 use std::io::Read;
+use std::mem;
 use std::{default, io};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-// 9-29
-// To Do
-// implement all items
+// 10-02-22
+// TO DO
+// reconstruct final round
 
-// 930 to do
-// figue out how to swap two values
-// use other values to buffer?
-// use std::mem::swap?
-
-// 10-1 TODO
-// mario kart:
-// rank items by power, make powerful items rarer
-// powerful items can only be rolled by last place characters
-
-
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Player {
     name: String,
     score: i32,
@@ -35,7 +24,7 @@ pub struct Player {
     good_items: GoodItems,
 }
 
-const TARGET: i32 = 100;
+const TARGET: i32 = 10;
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, Copy, Default, Ord, PartialOrd)]
 pub enum EvilItems {
@@ -44,7 +33,6 @@ pub enum EvilItems {
     /// subtract from everyone elses scores, you gain no points
     EvilDice,
     /// chance to double or quadruple roll
-    
     ScoreSwap,
     /// yoink an item from player
     Yoink,
@@ -82,7 +70,7 @@ impl Distribution<GoodItems> for Standard {
         match rng.gen_range(0..=3) {
             0 => GoodItems::MegaDice,
             1 => GoodItems::TripleDice,
-            _ => GoodItems::EvenOdd
+            _ => GoodItems::EvenOdd,
         }
     }
 }
@@ -193,14 +181,13 @@ pub fn set_player(name: String) -> Player {
         score: 0,
         turn_count: 0,
         evil_items: EvilItems::default(),
-        good_items: GoodItems::default()
+        good_items: GoodItems::default(),
     }
 }
 
 fn main() {
     print_milady();
     print_instructions();
-
 
     // How many players?
     let mut p_string = String::new();
@@ -252,10 +239,10 @@ fn main() {
         thread_rng().gen_range(1..13)
     }
 
-    fn item_roll () -> i32 {
+    fn item_roll() -> i32 {
         thread_rng().gen_range(1..101)
     }
-    
+
     // vector of random prompts to spice it up
     let random_prompts: Vec<String> = vec![
         String::from(", ⌚ TIME TO ROLL"),
@@ -301,21 +288,21 @@ fn main() {
             .filter(|p| p.turn_count == turn_count)
             .collect()
     }
-    
+
     println!("{}{}", ("ENABLE ITEMS?").cyan(), (" y / n").cyan().dimmed());
-    
+
     let mut item_toggle = 0;
     loop {
-    let mut response = String::new();
-    io::stdin().read_line(&mut response).expect("cant");
+        let mut response = String::new();
+        io::stdin().read_line(&mut response).expect("cant");
         match response.trim() {
             "y" => {
                 item_toggle = 1;
-                break}
-            "n" => {break}
-            _ => println!("{}", ("please answer y / n").cyan().dimmed())
+                break;
+            }
+            "n" => break,
+            _ => println!("{}", ("please answer y / n").cyan().dimmed()),
         }
-        
     }
 
     match item_toggle {
@@ -349,7 +336,7 @@ fn main() {
             let r3 = dice_roll();
             let m1 = mega_dice_roll();
             let m2 = mega_dice_roll();
-            
+
             let item_picker = item_roll();
 
             // get input
@@ -359,10 +346,18 @@ fn main() {
                 .expect("cant read that");
 
             // match input values to commands
-            
-            match (keyboard_roll.trim(), players[i].evil_items, players[i].good_items, item_toggle) {
-                ("c", _, _, 1) => {
 
+            match (
+                keyboard_roll.trim(),
+                players[i].evil_items,
+                players[i].good_items,
+                item_toggle,
+            ) {
+                ("c", _, _, _) => {
+                    println!("{} {}", ("r").green(), ("roll dice").green().dimmed());
+                    println!("{} {}", ("q").green(), ("end turn").green().dimmed());
+                    println!("{} {}", ("s").green(), ("show scoreboard").green().dimmed());
+                    println!("{} {}", ("i").green(), ("check items").green().dimmed());
                 }
                 ("q", _, _, _) => {
                     println!(
@@ -401,8 +396,16 @@ fn main() {
                         players[i].name.cyan().dimmed(),
                         ("'s BAG").cyan().dimmed()
                     );
-                    print!("{} {:?}", ("evil").red(), players[i].evil_items.bright_red());
-                    print!("\n{} {:?}\n", ("good").blue(), players[i].good_items.bright_blue());
+                    print!(
+                        "{} {:?}",
+                        ("evil").red(),
+                        players[i].evil_items.bright_red()
+                    );
+                    print!(
+                        "\n{} {:?}\n",
+                        ("good").blue(),
+                        players[i].good_items.bright_blue()
+                    );
                     match (players[i].evil_items, players[i].good_items) {
                         (EvilItems::Nothing, GoodItems::Nothing) => println!("{}", ("1 in 4 chance to earn an item everytime you roll").cyan().dimmed()),
                         (_, GoodItems::MegaDice) => println!(
@@ -478,7 +481,6 @@ fn main() {
                 }
                 //show scoreboard
                 ("s", _, _, _) => {
-
                     // sort players by score
                     let mut ranking = players.clone();
                     // init last place index as usize
@@ -487,57 +489,94 @@ fn main() {
                     for i in ranking.iter() {
                         match i.score {
                             x if x == ranking[last].score => {
-                                    println!(
-                                        "{} {} {}", 
-                                        (" LAST! ").white().on_red().blink(), 
-                                        i.name.to_ascii_uppercase().bright_cyan(),
-                                        i.score.bright_green().bold(),
-                                    );
-                                    
+                                println!(
+                                    "{} {} {}",
+                                    (" LAST! ").white().on_red().blink(),
+                                    i.name.to_ascii_uppercase().bright_cyan(),
+                                    i.score.bright_green().bold(),
+                                );
                             }
                             x if x == ranking[0].score => {
-                                    println!("{} {} {}", ("1st").yellow().blink(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
-                                    
+                                println!(
+                                    "{} {} {}",
+                                    ("1st").yellow().blink(),
+                                    i.name.to_ascii_uppercase().bright_cyan(),
+                                    i.score.bright_green().bold()
+                                );
                             }
                             x if x == ranking[1].score => {
-                                    println!("{} {} {}", ("2nd").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
-                                    
+                                println!(
+                                    "{} {} {}",
+                                    ("2nd").yellow(),
+                                    i.name.to_ascii_uppercase().bright_cyan(),
+                                    i.score.bright_green().bold()
+                                );
                             }
-                            
+
                             x if x == ranking[2].score => {
-                                    println!("{} {} {}", ("3rd").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
-                                    
+                                println!(
+                                    "{} {} {}",
+                                    ("3rd").yellow(),
+                                    i.name.to_ascii_uppercase().bright_cyan(),
+                                    i.score.bright_green().bold()
+                                );
                             }
                             x if x == ranking[3].score => {
-                                    println!("{} {} {}", ("4th").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
-                                    
+                                println!(
+                                    "{} {} {}",
+                                    ("4th").yellow(),
+                                    i.name.to_ascii_uppercase().bright_cyan(),
+                                    i.score.bright_green().bold()
+                                );
                             }
                             x if x == ranking[4].score => {
-                                    println!("{} {} {}", ("5th").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
-                                    
+                                println!(
+                                    "{} {} {}",
+                                    ("5th").yellow(),
+                                    i.name.to_ascii_uppercase().bright_cyan(),
+                                    i.score.bright_green().bold()
+                                );
                             }
                             x if x == ranking[5].score => {
-                                    println!("{} {} {}", ("6th").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
-                                    
+                                println!(
+                                    "{} {} {}",
+                                    ("6th").yellow(),
+                                    i.name.to_ascii_uppercase().bright_cyan(),
+                                    i.score.bright_green().bold()
+                                );
                             }
                             x if x == ranking[6].score => {
-                                    println!("{} {} {}", ("7th ").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
-                                    
+                                println!(
+                                    "{} {} {}",
+                                    ("7th ").yellow(),
+                                    i.name.to_ascii_uppercase().bright_cyan(),
+                                    i.score.bright_green().bold()
+                                );
                             }
                             x if x == ranking[7].score => {
-                                    println!("{} {} {}", ("8th").yellow(), i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
-                                    
+                                println!(
+                                    "{} {} {}",
+                                    ("8th").yellow(),
+                                    i.name.to_ascii_uppercase().bright_cyan(),
+                                    i.score.bright_green().bold()
+                                );
                             }
                             x if x < 0 => {
-                                    println!("{} {} {}", i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold(), ("SAD").truecolor(233, 94, 70));
-                                    
+                                println!(
+                                    "{} {} {}",
+                                    i.name.to_ascii_uppercase().bright_cyan(),
+                                    i.score.bright_green().bold(),
+                                    ("SAD").truecolor(233, 94, 70)
+                                );
                             }
                             _ => {
-                                    println!("{} {}", i.name.to_ascii_uppercase().bright_cyan(), i.score.bright_green().bold());
-                                    
+                                println!(
+                                    "{} {}",
+                                    i.name.to_ascii_uppercase().bright_cyan(),
+                                    i.score.bright_green().bold()
+                                );
                             }
                         }
-                        
                     }
                     println!("\n")
                 }
@@ -580,14 +619,14 @@ fn main() {
                             );
                             println!("{} {}", ("TURN SCORE").dimmed(), turn_scores[i].green(),);
                         }
-                        
+
                         //normal roll
                         _ => {
                             turn_scores[i] += r1 + r2;
                             println!("{}{}\n", ("turn score:").dimmed(), turn_scores[i].green(),);
                         }
                     }
-                    
+
                     // sort players by score
                     let mut placement = players.clone();
                     // init last place index as usize
@@ -663,7 +702,9 @@ fn main() {
                             players[i].good_items = random_item;
                         }
                         // 2nd to last has 33% chance of getting evil items
-                        (66..=100, second2last) if second2last == placement[second_to_last].name => {
+                        (66..=100, second2last)
+                            if second2last == placement[second_to_last].name =>
+                        {
                             // powerful items
                             let random_item: EvilItems = rand::random();
                             println!("{}", ("found item!").italic().dimmed());
@@ -675,7 +716,7 @@ fn main() {
                             );
                             players[i].evil_items = random_item;
                         }
-                        
+
                         // everyone else
                         // 10% evil / 33% good
                         (1..=10, _) => {
@@ -691,7 +732,7 @@ fn main() {
                             players[i].evil_items = random_item;
                         }
                         (66..=100, _) => {
-// soft items
+                            // soft items
                             let random_item: GoodItems = rand::random();
                             println!("{}", ("found item!").italic().dimmed());
                             println!(
@@ -745,15 +786,13 @@ fn main() {
                             );
                             println!("{} {}", ("TURN SCORE").dimmed(), turn_scores[i].green(),);
                         }
-                        
+
                         //normal roll
                         _ => {
                             turn_scores[i] += r1 + r2;
                             println!("{}{}\n", ("turn score:").dimmed(), turn_scores[i].green(),);
                         }
                     }
-                    
-                    
                 }
 
                 //give items
@@ -767,10 +806,18 @@ fn main() {
 
                 //dont have items
                 ("evil", item, _, 1) if item != EvilItems::EvilDice => {
-                    println!("{}{:?}", ("don't have ").dimmed().italic(), EvilItems::EvilDice)
+                    println!(
+                        "{}{:?}",
+                        ("don't have ").dimmed().italic(),
+                        EvilItems::EvilDice
+                    )
                 }
                 ("even", _, item, 1) if item != GoodItems::EvenOdd => {
-                    println!("{}{:?}", ("don't have ").dimmed().italic(), GoodItems::EvenOdd)
+                    println!(
+                        "{}{:?}",
+                        ("don't have ").dimmed().italic(),
+                        GoodItems::EvenOdd
+                    )
                 }
                 ("leech", item, _, 1) if item != EvilItems::LeechDice => println!(
                     "{}{:?}",
@@ -778,7 +825,11 @@ fn main() {
                     EvilItems::LeechDice
                 ),
                 ("mega", _, item, 1) if item != GoodItems::MegaDice => {
-                    println!("{}{:?}", ("don't have ").dimmed().italic(), GoodItems::MegaDice)
+                    println!(
+                        "{}{:?}",
+                        ("don't have ").dimmed().italic(),
+                        GoodItems::MegaDice
+                    )
                 }
                 ("score swap", item, _, 1) if item != EvilItems::ScoreSwap => println!(
                     "{}{:?}",
@@ -791,7 +842,11 @@ fn main() {
                     GoodItems::TripleDice
                 ),
                 ("yoink", item, _, 1) if item != EvilItems::Yoink => {
-                    println!("{}{:?}", ("don't have ").dimmed().italic(), EvilItems::Yoink)
+                    println!(
+                        "{}{:?}",
+                        ("don't have ").dimmed().italic(),
+                        EvilItems::Yoink
+                    )
                 }
                 //have item
 
@@ -1001,51 +1056,55 @@ fn main() {
                             (m1 + m2).bright_green()
                         );
                         match (m1, m2) {
-                        //snake eyes
-                        (1, 1) => {
-                            println!("\n{}", ("  SNAKE EYES  ").on_bright_magenta());
-                            players[i].score *= 0;
-                            println!("{}", ("TOTAL SCORE 0").red());
-                            players[i].turn_count += 1;
-                            break 'turn
-                            },
-                        //roll 1
-
-                        (a, b) if a == 1 || b == 1 => {
-                            println!("\n{}", random_ones[index]);
-                            println!("{}", ("ROLLED A 1!").dimmed());
-                            println!("{}", ("TURN COMPLETE").red());
-                            println!("{} {}", ("TOTAL SCORE").blue(), players[i].score);
-                            players[i].turn_count += 1;
-                            break 'turn
+                            //snake eyes
+                            (1, 1) => {
+                                println!("\n{}", ("  SNAKE EYES  ").on_bright_magenta());
+                                players[i].score *= 0;
+                                println!("{}", ("TOTAL SCORE 0").red());
+                                players[i].turn_count += 1;
+                                break 'turn;
+                            }
+                            //roll 1
+                            (a, b) if a == 1 || b == 1 => {
+                                println!("\n{}", random_ones[index]);
+                                println!("{}", ("ROLLED A 1!").dimmed());
+                                println!("{}", ("TURN COMPLETE").red());
+                                println!("{} {}", ("TOTAL SCORE").blue(), players[i].score);
+                                players[i].turn_count += 1;
+                                break 'turn;
+                            }
+                            (j, k) if j == k => {
+                                println!("{}", dubs_msg[index]);
+                                turn_scores[i] += m1 * 4;
+                                println!(
+                                    "\n{} x2 = {}🎉",
+                                    (m1 * 2).green(),
+                                    (m1 * 4).bright_green().bold().blink()
+                                );
+                                println!("{} {}", ("TURN SCORE").dimmed(), turn_scores[i].green(),);
+                            }
+                            (6, 9) => {
+                                println!("{}", ("good_items sunglasses emoji"));
+                                turn_scores[i] += m1 + m2
+                            }
+                            (3, 11) => {
+                                println!("{}", ("woah amber is the color of your energy"));
+                                turn_scores[i] += m1 + m2
+                            }
+                            (7, 11) => {
+                                println!("{}", ("711 bonus! free slurpees for everyone"));
+                                turn_scores[i] += m1 + m2
+                            }
+                            (9, 11) => {
+                                println!("{}", ("plane building emojis 911 in rememberance of building 7, each player is awarded +7pts!"));
+                                turn_scores[i] += m1 + m2
+                            }
+                            //normal roll
+                            _ => {
+                                turn_scores[i] += m1 + m2;
+                                println!("{}{}", ("turn score:").dimmed(), turn_scores[i].green(),);
+                            }
                         }
-                        (j, k) if j == k => {
-                            println!("{}", dubs_msg[index]);
-                            turn_scores[i] += m1 * 4;
-                            println!("\n{} x2 = {}🎉", (m1 * 2).green(), (m1 * 4).bright_green().bold().blink());
-                            println!(
-                                "{} {}",
-                                ("TURN SCORE").dimmed(),
-                                turn_scores[i].green(),
-                            );
-
-                        },
-                        (6, 9) => {println!("{}", ("good_items sunglasses emoji"));
-                            turn_scores[i] += m1 + m2
-                    },
-                        (3, 11) => {println!("{}", ("woah amber is the color of your energy")); turn_scores[i] += m1 + m2
-                    },
-                        (7, 11) => {println!("{}", ("711 bonus! free slurpees for everyone")); turn_scores[i] += m1 + m2},
-                        (9, 11) => {println!("{}", ("plane building emojis 911 in rememberance of building 7, each player is awarded +7pts!")); turn_scores[i] += m1 + m2},
-                        //normal roll
-                        _ => {turn_scores[i] += m1 + m2;
-                        println!(
-                            "{}{}",
-                            ("turn score:").dimmed(),
-                            turn_scores[i].green(),
-                        );
-
-                        }}
                     }
                 }
                 ("leech", EvilItems::LeechDice, _, 1) => {
@@ -1122,9 +1181,15 @@ fn main() {
                                                             ("will be leeched from ")
                                                                 .purple()
                                                                 .dimmed(),
-                                                            players[i].name.to_ascii_uppercase().purple().bold(),
+                                                            players[i]
+                                                                .name
+                                                                .to_ascii_uppercase()
+                                                                .purple()
+                                                                .bold(),
                                                             (" and given to ").purple().dimmed(),
-                                                            cur.to_ascii_uppercase().purple().bold()
+                                                            cur.to_ascii_uppercase()
+                                                                .purple()
+                                                                .bold()
                                                         );
                                                         players[i].score -= pts_stolen;
                                                         players[n].score += pts_stolen;
@@ -1137,9 +1202,15 @@ fn main() {
                                                             ("will be leeched from ")
                                                                 .purple()
                                                                 .dimmed(),
-                                                            cur.to_ascii_uppercase().purple().bold(),
+                                                            cur.to_ascii_uppercase()
+                                                                .purple()
+                                                                .bold(),
                                                             (" and given to ").purple().dimmed(),
-                                                            players[i].name.to_ascii_uppercase().purple().bold()
+                                                            players[i]
+                                                                .name
+                                                                .to_ascii_uppercase()
+                                                                .purple()
+                                                                .bold()
                                                         );
                                                         players[i].score += pts_stolen;
                                                         players[n].score -= pts_stolen;
@@ -1200,7 +1271,7 @@ fn main() {
                                 );
                                 break 'inner;
                             }
-                        }// inner end
+                        } // inner end
                     } /* end loop */
                 }
                 // add emojis in vim!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1300,11 +1371,16 @@ fn main() {
                     println!("{}", ("Keep Rolling\n").dimmed().italic())
                 }
                 ("swap", EvilItems::ScoreSwap, _, 1) => {
-                    println!("{}", (" UNDER CONSTRUCTION check back later ").on_bright_red().bold());
+                    println!(
+                        "{}",
+                        (" UNDER CONSTRUCTION check back later ")
+                            .on_bright_red()
+                            .bold()
+                    );
                     // use item
                     players[i].evil_items = EvilItems::Nothing;
                     // println!("{}", (" CHOOSE A PLAYER TO SWAP SCORES WITH ").black().on_truecolor(255, 95, 31));
-                    
+
                     // 'outer: loop {
                     //     // take input
                     //     let mut input = String::new();
@@ -1328,7 +1404,7 @@ fn main() {
                     //                 mem::swap(&mut a, &mut b);
                     //                 println!("{}{}{}{}", players[i].name, (" now has "), players[i].score, ("pts"));
                     //                 println!("{}{}{}{}", players[s].name, (" now has "), players[s].score, ("pts"));
-                                    
+
                     //                 break 'outer
                     //             }
                     //             _ => s += 1,
@@ -1337,15 +1413,17 @@ fn main() {
                     //             println!("{}", ("please choose valid target").dimmed().italic().truecolor(255, 95, 23));
                     //             break 'inner;
                     //         }
-                            
-                            
+
                     //     } // inner end
-                        
 
                     // } // outer end
                 }
                 ("yoink", EvilItems::Yoink, _, 1) => {
-                    println!("{}{}", (" UNDER CONSTRUCTION ").white().on_yellow().bold(), (" check back later").dimmed().italic());
+                    println!(
+                        "{}{}",
+                        (" UNDER CONSTRUCTION ").white().on_yellow().bold(),
+                        (" check back later").dimmed().italic()
+                    );
                     players[i].evil_items = EvilItems::Nothing;
                     // println!("{}{}{}", players[i].name.to_ascii_uppercase().on_truecolor(251, 72, 196).bold(), (" used ").truecolor(251, 72, 196), ("YOINK").truecolor(251, 72, 196).bold().blink());
                     // println!("{}", (" SELECT A PLAYER TO STEAL AN ITEM FROM ").on_truecolor(251, 72, 196).bold());
@@ -1380,228 +1458,88 @@ fn main() {
                 (_, _, _, _) => println!("{}", ("invalid command").dimmed().italic()),
             }
         }
-
         // end of turn loop
+        
 
         // check if anyone has won
-
-        // temp changed to 30 so i can test the end game in terminal
-
-        // if last player wins then this loop is unessecary
-        if players[i].score >= TARGET {
-            println!("\nCONGRATS {}!", (players[i].name).bright_green());
-            println!("\n🏆🥇{}🥇🏆", (" YOU WON ").yellow().blink());
-            println!("{}{}{}", ("with ").yellow().dimmed(), players[i].score.yellow(), ("pts").yellow());
-
-            // if it is the last player the game ends
-            // beacuse everyone has had an equal number of turns
-            if i == (p_num - 1).try_into().unwrap() {
-                break 'game;
-            } else {
-                println!("\n{}\n", ("...almost!").bright_magenta());
+        match (players[i].score, i) {
+            // score higher than target &
+            (x, i) if x >= TARGET && i + 1 == p_num.try_into().unwrap() => {
+                println!("\n\t{} {}{}", ("CONGRATS").yellow(), players[i].name.to_ascii_uppercase().bright_cyan(), ("!").bright_cyan());
+                println!("\n🏆🥇{}🥇🏆 {}{}{} {} {} {}", (" YOU WON ").yellow().blink(), ("with ").yellow().dimmed(), players[i].score.yellow(), ("pts").yellow(),
+                ("in").yellow().dimmed(), players[i].turn_count.yellow(), ("turns").yellow().dimmed()
+            );
+                println!("", );
+                break 'game
+            }
+            (x, _) if x >= TARGET => {
+                println!("{}", ("reached target score, \nbut some players still get a final turn").cyan().dimmed().italic());
                 println!(
                     "{}{}{}",
                     ("You won in ").bright_cyan().dimmed(),
                     (players[i].turn_count).bright_cyan(),
                     (" turns.").bright_cyan().dimmed()
                 );
-                println!(
-                    "{}{}{}",
-                    ("all players who have not had ").bright_cyan().dimmed(),
-                    (players[i].turn_count).bright_cyan(),
-                    (" turns get one last chance to beat your score!")
-                        .bright_cyan()
-                        .dimmed()
-                );
+            // new vector for all players that have taken 1 less turn than the player who one
+            // that way all players get an equal number of turns
+            let mut final_players = last_turns(players.to_owned(), players[i].turn_count - 1);
 
-                // create a new vector for the final players
-                let total_turns_minus_one = players[i].turn_count - 1;
-                let cloned_players = players.clone();
-                let mut final_round_players = last_turns(cloned_players, total_turns_minus_one);
-                for i in final_round_players.iter() {
-                    println!("{}", i.name.trim().bright_red())
-                }
+            // sort players by score
+            let mut ranking = players.clone();
+            ranking.sort_by(|a, b| b.score.cmp(&a.score));
+            let mut final_turn_scores: Vec<i32> = vec![0; final_players.len()];
 
-                // create a vec of the player w the highest score
-                let mut high_scores: Vec<Player> = vec![players[i].clone()];
-                let mut v: usize = 0;
-                loop {
-                    'final_turn: loop {
-                        let pts_away = high_scores[0].score - final_round_players[v].score;
+            let mut f = 0;
+            let mut pts_away = ranking[0].score - final_players[f].score;
+            'final_go: loop {
+                // init roll values
+                let f1 = dice_roll();
+                let f2 = dice_roll();
+                // get input
+                let mut final_roll = String::new();
+                io::stdin().read_line(&mut final_roll).expect("cant");
 
-                        // if a player surpasses the current highscore
-                        // it the old high score is popped out of the vec
-                        // and the new high score is pushed in
-                        if final_round_players[v].score > high_scores[0].score {
-                            println!(
-                                "{} you've passed {}'s score",
-                                final_round_players[v].name.trim().bold().on_cyan(),
-                                players[i].name.trim().bold().on_bright_magenta()
-                            );
-                            high_scores.pop();
-                            high_scores.push(final_round_players[v].clone());
-                            println!("You set the new high score!");
-                        }
-
-                        // prompt roll / show how many points away they are
+                match final_roll.trim() {
+                    "r" => {
+                        // 🎲🎲 print roll
                         println!(
-                            "\n\n{}{}\n{}{}{}{}",
-                            final_round_players[v].name.bright_green().bold(),
-                            endgame[index].blue().bold(),
-                            ("you are only ").blue().dimmed(),
-                            pts_away.bright_red(),
-                            ("pts").bright_red(),
-                            (" away").blue().dimmed()
-                        );
-
-                        let r1 = dice_roll();
-                        let r2 = dice_roll();
-                        //use normal turn functions!
-                        let mut endroll = String::new();
-                        io::stdin().read_line(&mut endroll).expect("cant read");
-
-                        match endroll.trim() {
-                            "r" => {
-                                println!(
-                                    "\n\n{} + {} = {}",
-                                    r1.red().on_white().bold(),
-                                    r2.red().on_white().bold(),
-                                    (r1 + r2).bright_green()
-                                );
-                                match (r1, r2) {
-                                    (x, y) if x == 1 || y == 1 => {
-                                        println!("{}", ("YOU LOSE"));
-                                        v += 1;
-                                        break 'final_turn;
-                                    }
-                                    (x, y) if x == 1 && y == 1 => {
-                                        println!(
-                                            "{}",
-                                            ("of all the times you could rolled SNAKE EYES")
-                                                .dimmed()
-                                                .italic()
-                                        );
-                                        v += 1;
-                                        break 'final_turn;
-                                    }
-                                    (x, y) if x == y => {
-                                        println!("{}", dubs_msg[index]);
-                                        println!(
-                                            "\n{} x2 = {}🎉",
-                                            (r1 * 2).green(),
-                                            (r1 * 4).bright_green().bold().blink()
-                                        );
-                                        final_round_players[v].score += r1 * 4;
-                                        continue 'final_turn;
-                                    }
-                                    (_, _) => {
-                                        final_round_players[v].score += r1 + r2;
-                                        continue 'final_turn;
-                                    }
-                                }
+                        "\n{} + {} = {}\n",
+                        f1.red().on_white().bold(),
+                        f2.red().on_white().bold(),
+                        (f1 + f2).bright_green()
+                    );
+                        // check dice
+                        match (f1, f2) {
+                            (x, y) if x == y => {
+                                println!("{}", ("DOUBLES").cyan().dimmed());
+                                println!("{}{}{}", (f1 + f2).cyan(), (" * 2 = ").cyan().dimmed(), (f1 * 4).cyan());
+                                final_turn_scores[f] += f1*4;
                             }
-                            "q" => println!("{}", ("cannot quit final round").italic().dimmed()),
-                            "even" => {
-                                println!("{}", ("cannot use item on final round").dimmed().italic())
+                            (x, y) if x == 1 && y == 1 => {
+                                println!("{}", ("SNAKE EYES").red());
+                                println!("{}", ("you have 0pts & you lose").red().dimmed());
                             }
-                            "evil" => {
-                                println!("{}", ("cannot use item on final round").dimmed().italic())
+                            (x, y) if x == 1 || y == 1 => {
+                                println!("{}", ("ROLLED A 1").red());
+                                println!("{}", ("you lose").red().dimmed());
                             }
-                            "mega" => {
-                                println!("{}", ("cannot use item on final round").dimmed().italic())
-                            }
-                            "triple" => {
-                                println!("{}", ("cannot use item on final round").dimmed().italic())
-                            }
-                            "yoink" => {
-                                println!("{}", ("cannot use item on final round").dimmed().italic())
-                            }
-                            "leech" => {
-                                println!("{}", ("cannot use item on final round").dimmed().italic())
-                            }
-                            "swap" => {
-                                println!("{}", ("cannot use item on final round").dimmed().italic())
-                            }
-                            _ => println!(" "),
-                        }
-                        if endroll.trim().contains("roll") {
-                            let roll1 = dice_roll();
-                            let roll2 = dice_roll();
-                            // 🎲🎲 print roll
-
-                            if roll1 == roll2 {
-                                println!("fuck yeah lets fucking go thats good thats real good keep doing that");
-                                final_round_players[v].score += roll1 * 4;
-                                println!("keep rolling? \ny or n");
-                                let mut yon = String::new();
-                                io::stdin()
-                                    .read_line(&mut yon)
-                                    .expect("error can't read that");
-                                let noy: bool = yon.contains("y");
-                                if noy {
-                                    continue 'final_turn;
-                                } else {
-                                    v += 1;
-                                    break 'final_turn;
-                                }
-                                // remember to let players win on last round
-                            } else {
-                                final_round_players[v].score += roll1 + roll2;
-                                if final_round_players[v].score > players[i].score {
-                                    println!(
-                                        "{} you have surpassed {}'s score",
-                                        final_round_players[v].name.trim().bold().on_cyan(),
-                                        players[i].name.trim().bold().on_bright_magenta()
-                                    );
-                                    high_scores.pop();
-                                    high_scores.push(final_round_players[v].clone());
-                                    println!("You set the new high score!");
-                                    println!("keep rolling? \ny or n");
-                                    let mut yon = String::new();
-                                    io::stdin()
-                                        .read_line(&mut yon)
-                                        .expect("error can't read that");
-                                    let noy: bool = yon.contains("y");
-                                    if noy {
-                                        continue 'final_turn;
-                                    } else {
-                                        v += 1;
-                                        break 'final_turn;
-                                    }
-                                }
-                                continue 'final_turn;
-                            }
-                        }
-                        // end final turn loop
-
-                        if v == final_round_players.len() - 1 {
-                            println!("{:?} is the high score", high_scores);
-                            break 'game;
-                        } else {
-                            v += 1;
+                            _ => final_turn_scores[f] += f1 + f2
                         }
                     }
-
-                    // end final game loop
+                    "q" => {
+                        final_players[f].score += final_turn_scores[i];
+                        break 'final_go
+                    }
+                    _ => {}
                 }
             }
-            // end turn loop
-        }
-
-        // check high score
-        match (players[i].score, high_score[0].score) {
-            (x, y) if x > y => {
-                high_score.pop();
-                high_score.push(players[i].clone());
-                println!(
-                    "{}{}{}",
-                    players[i].name.bright_cyan(),
-                    (" has set the new high score at ").cyan().dimmed(),
-                    players[i].score.bright_cyan().bold()
-                )
+                
             }
-            _ => (),
+            
+            _ => ()
         }
+        // if last player wins then this loop is unessecary
+        
 
         // turn loop goes to next player's turn
         // unless the index = number of players - 1
