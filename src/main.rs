@@ -265,7 +265,7 @@ fn main() {
     ];
 
     // random messages after rolling 1s
-    let mut random_ones: Vec<String> = vec![
+    let random_ones: Vec<String> = vec![
         String::from("👹👹👹👹👹👹👹👹👹"),
         String::from("🪦🤡"),
         String::from("🤣😹😂😹🤣"),
@@ -274,14 +274,14 @@ fn main() {
 
     // snake eyes
     // doubles
-    let mut dubs_msg: Vec<String> = vec![
+    let dubs_msg: Vec<String> = vec![
         String::from("🤠🎉DOUBLES🎉🤠"),
         String::from("👽👾🌌🛸🌕🛸🌌👾👽"),
         String::from("🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔🦔"),
         String::from("🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄🦄"),
     ];
 
-    let mut endgame: Vec<String> = vec![
+    let endgame: Vec<String> = vec![
         (String::from(", GOOD LUCK")),
         (String::from(", DON'T CHOKE")),
         (String::from(", YOU CAN DO IT")),
@@ -302,7 +302,27 @@ fn main() {
             .collect()
     }
     
+    println!("{}{}", ("ENABLE ITEMS?").cyan(), (" y / n").cyan().dimmed());
+    
+    let mut item_toggle = 0;
+    loop {
+    let mut response = String::new();
+    io::stdin().read_line(&mut response).expect("cant");
+        match response.trim() {
+            "y" => {
+                item_toggle = 1;
+                break}
+            "n" => {break}
+            _ => println!("{}", ("please answer y / n").cyan().dimmed())
+        }
+        
+    }
 
+    match item_toggle {
+        1 => println!("\n{}", ("ITEMS ENABLED").italic().cyan()),
+        0 => println!("\n{}", ("items off").italic().cyan()),
+        _ => println!("{}", ("wackydacky").italic().cyan()),
+    }
 
     let mut i: usize = 0;
     'game: loop {
@@ -329,7 +349,7 @@ fn main() {
             let r3 = dice_roll();
             let m1 = mega_dice_roll();
             let m2 = mega_dice_roll();
-            let secret_num = dice_roll();
+            
             let item_picker = item_roll();
 
             // get input
@@ -340,8 +360,11 @@ fn main() {
 
             // match input values to commands
             
-            match (keyboard_roll.trim(), players[i].evil_items, players[i].good_items) {
-                ("q", _, _) => {
+            match (keyboard_roll.trim(), players[i].evil_items, players[i].good_items, item_toggle) {
+                ("c", _, _, 1) => {
+
+                }
+                ("q", _, _, _) => {
                     println!(
                         "{}{}",
                         players[i].name.bright_blue(),
@@ -358,7 +381,7 @@ fn main() {
                     break 'turn;
                 }
                 //auto roll
-                ("auto", _, _) => {
+                ("auto", _, _, _) => {
                     println!("{}", ("set auto roll amount").dimmed().italic());
                     let mut auto_roll = String::new();
                     io::stdin().read_line(&mut auto_roll).expect("cant");
@@ -372,7 +395,7 @@ fn main() {
                     );
                 }
                 //check items + descriptions
-                ("i", _, _) => {
+                ("i", _, _, 1) => {
                     println!(
                         "\n{}{}",
                         players[i].name.cyan().dimmed(),
@@ -449,8 +472,12 @@ fn main() {
                     }
                     println!("");
                 }
+                //items off
+                ("i", _, _, _) => {
+                    println!("{}", ("ITEMS TURNED OFF").cyan().italic())
+                }
                 //show scoreboard
-                ("s", _, _) => {
+                ("s", _, _, _) => {
 
                     // sort players by score
                     let mut ranking = players.clone();
@@ -515,7 +542,7 @@ fn main() {
                     println!("\n")
                 }
                 //normal roll
-                ("r", _, _) => {
+                ("r", _, _, 1) => {
                     // 🎲🎲 print roll
                     println!(
                         "\n{} + {} = {}\n",
@@ -679,48 +706,97 @@ fn main() {
                         _ => {}
                     }
                 }
+                // no items normal roll
+                ("r", _, _, 0) => {
+                    // 🎲🎲 print roll
+                    println!(
+                        "\n{} + {} = {}\n",
+                        r1.red().on_white().bold(),
+                        r2.red().on_white().bold(),
+                        (r1 + r2).bright_green()
+                    );
+                    // match dice
+                    match (r1, r2) {
+                        //snake eyes
+                        (1, 1) => {
+                            println!("\n{}", ("  SNAKE EYES  ").on_bright_magenta());
+                            players[i].score *= 0;
+                            println!("{}", ("TOTAL SCORE 0").red());
+                            players[i].turn_count += 1;
+                            break 'turn;
+                        }
+                        //roll a 1
+                        (x, y) if x == 1 || y == 1 => {
+                            println!("\n{}", random_ones[index]);
+                            println!("{}", ("ROLLED A 1!").dimmed());
+                            println!("{}", ("TURN COMPLETE").red());
+                            println!("{} {}", ("TOTAL SCORE").blue(), players[i].score);
+                            players[i].turn_count += 1;
+                            break 'turn;
+                        }
+                        // roll doubles
+                        (x, y) if x == y => {
+                            println!("{}", dubs_msg[index]);
+                            turn_scores[i] += r1 * 4;
+                            println!(
+                                "\n{} x2 = {}🎉",
+                                (r1 * 2).green(),
+                                (r1 * 4).bright_green().bold().blink()
+                            );
+                            println!("{} {}", ("TURN SCORE").dimmed(), turn_scores[i].green(),);
+                        }
+                        
+                        //normal roll
+                        _ => {
+                            turn_scores[i] += r1 + r2;
+                            println!("{}{}\n", ("turn score:").dimmed(), turn_scores[i].green(),);
+                        }
+                    }
+                    
+                    
+                }
 
                 //give items
-                ("e", _, _) => players[i].evil_items = EvilItems::EvilDice,
-                ("eo", _, _) => players[i].good_items = GoodItems::EvenOdd,
-                ("l", _, _) => players[i].evil_items = EvilItems::LeechDice,
-                ("m", _, _) => players[i].good_items = GoodItems::MegaDice,
-                ("ss", _, _) => players[i].evil_items = EvilItems::ScoreSwap,
-                ("t", _, _) => players[i].good_items = GoodItems::TripleDice,
-                ("y", _, _) => players[i].evil_items = EvilItems::Yoink,
+                ("e", _, _, 1) => players[i].evil_items = EvilItems::EvilDice,
+                ("eo", _, _, 1) => players[i].good_items = GoodItems::EvenOdd,
+                ("l", _, _, 1) => players[i].evil_items = EvilItems::LeechDice,
+                ("m", _, _, 1) => players[i].good_items = GoodItems::MegaDice,
+                ("ss", _, _, 1) => players[i].evil_items = EvilItems::ScoreSwap,
+                ("t", _, _, 1) => players[i].good_items = GoodItems::TripleDice,
+                ("y", _, _, 1) => players[i].evil_items = EvilItems::Yoink,
 
                 //dont have items
-                ("evil", item, _) if item != EvilItems::EvilDice => {
+                ("evil", item, _, 1) if item != EvilItems::EvilDice => {
                     println!("{}{:?}", ("don't have ").dimmed().italic(), EvilItems::EvilDice)
                 }
-                ("even", _, item) if item != GoodItems::EvenOdd => {
+                ("even", _, item, 1) if item != GoodItems::EvenOdd => {
                     println!("{}{:?}", ("don't have ").dimmed().italic(), GoodItems::EvenOdd)
                 }
-                ("leech", item, _) if item != EvilItems::LeechDice => println!(
+                ("leech", item, _, 1) if item != EvilItems::LeechDice => println!(
                     "{}{:?}",
                     ("don't have ").dimmed().italic(),
                     EvilItems::LeechDice
                 ),
-                ("mega", _, item) if item != GoodItems::MegaDice => {
+                ("mega", _, item, 1) if item != GoodItems::MegaDice => {
                     println!("{}{:?}", ("don't have ").dimmed().italic(), GoodItems::MegaDice)
                 }
-                ("score swap", item, _) if item != EvilItems::ScoreSwap => println!(
+                ("score swap", item, _, 1) if item != EvilItems::ScoreSwap => println!(
                     "{}{:?}",
                     ("don't have ").dimmed().italic(),
                     EvilItems::ScoreSwap
                 ),
-                ("triple", _, item) if item != GoodItems::TripleDice => println!(
+                ("triple", _, item, 1) if item != GoodItems::TripleDice => println!(
                     "{}{:?}",
                     ("don't have ").dimmed().italic(),
                     GoodItems::TripleDice
                 ),
-                ("yoink", item, _) if item != EvilItems::Yoink => {
+                ("yoink", item, _, 1) if item != EvilItems::Yoink => {
                     println!("{}{:?}", ("don't have ").dimmed().italic(), EvilItems::Yoink)
                 }
                 //have item
 
                 // implement all items !!!
-                ("triple", _, GoodItems::TripleDice) => {
+                ("triple", _, GoodItems::TripleDice, 1) => {
                     // use tripleDice
                     players[i].good_items = GoodItems::Nothing;
                     // 🎲🎲 print roll
@@ -869,7 +945,7 @@ fn main() {
                         }
                     }
                 }
-                ("evil", EvilItems::EvilDice, _) => {
+                ("evil", EvilItems::EvilDice, _, 1) => {
                     println!(
                         "\n{}{}{}",
                         players[i].name.to_ascii_uppercase().on_red().bold(),
@@ -907,7 +983,7 @@ fn main() {
                         e += 1
                     }
                 }
-                ("mega", _, GoodItems::MegaDice) => {
+                ("mega", _, GoodItems::MegaDice, 1) => {
                     {
                         println!(
                             "{}{}{}",
@@ -972,7 +1048,7 @@ fn main() {
                         }}
                     }
                 }
-                ("leech", EvilItems::LeechDice, _) => {
+                ("leech", EvilItems::LeechDice, _, 1) => {
                     // use item
                     players[i].evil_items = EvilItems::Nothing;
 
@@ -1124,11 +1200,11 @@ fn main() {
                                 );
                                 break 'inner;
                             }
-                        }
+                        }// inner end
                     } /* end loop */
                 }
                 // add emojis in vim!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                ("even", _, GoodItems::EvenOdd) => {
+                ("even", _, GoodItems::EvenOdd, 1) => {
                     let mut pts: i32 = 0;
                     println!(
                         "{}",
@@ -1223,7 +1299,7 @@ fn main() {
                     players[i].good_items = GoodItems::Nothing;
                     println!("{}", ("Keep Rolling\n").dimmed().italic())
                 }
-                ("swap", EvilItems::ScoreSwap, _) => {
+                ("swap", EvilItems::ScoreSwap, _, 1) => {
                     println!("{}", (" UNDER CONSTRUCTION check back later ").on_bright_red().bold());
                     // use item
                     players[i].evil_items = EvilItems::Nothing;
@@ -1268,7 +1344,7 @@ fn main() {
 
                     // } // outer end
                 }
-                ("yoink", EvilItems::Yoink, _) => {
+                ("yoink", EvilItems::Yoink, _, 1) => {
                     println!("{}{}", (" UNDER CONSTRUCTION ").white().on_yellow().bold(), (" check back later").dimmed().italic());
                     players[i].evil_items = EvilItems::Nothing;
                     // println!("{}{}{}", players[i].name.to_ascii_uppercase().on_truecolor(251, 72, 196).bold(), (" used ").truecolor(251, 72, 196), ("YOINK").truecolor(251, 72, 196).bold().blink());
@@ -1301,7 +1377,7 @@ fn main() {
                     //     } //end target loop
                     // } //end loop
                 }
-                (_, _, _) => println!("{}", ("invalid command").dimmed().italic()),
+                (_, _, _, _) => println!("{}", ("invalid command").dimmed().italic()),
             }
         }
 
