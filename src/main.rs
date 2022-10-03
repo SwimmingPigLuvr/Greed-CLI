@@ -4,6 +4,7 @@ use rand::{
     distributions::{Distribution, Standard},
     Rng,
 };
+use std::ascii::AsciiExt;
 use std::borrow::Borrow;
 use std::io::Read;
 use std::mem;
@@ -11,9 +12,10 @@ use std::{default, io};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-// 10-02-22
-// TO DO
-// reconstruct final round
+// 10-03-22
+// TO DO:
+// fix pts away to display current high score, not just the player who first got the target score
+// emoji styling in NVIM
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Player {
@@ -1458,92 +1460,141 @@ fn main() {
                 (_, _, _, _) => println!("{}", ("invalid command").dimmed().italic()),
             }
         }
-        // end of turn loop
         
-
         // check if anyone has won
         match (players[i].score, i) {
-            // score higher than target &
+            // score higher than target & they are the last player to go
             (x, i) if x >= TARGET && i + 1 == p_num.try_into().unwrap() => {
                 println!("\n\t{} {}{}", ("CONGRATS").yellow(), players[i].name.to_ascii_uppercase().bright_cyan(), ("!").bright_cyan());
                 println!("\n🏆🥇{}🥇🏆 {}{}{} {} {} {}", (" YOU WON ").yellow().blink(), ("with ").yellow().dimmed(), players[i].score.yellow(), ("pts").yellow(),
                 ("in").yellow().dimmed(), players[i].turn_count.yellow(), ("turns").yellow().dimmed()
             );
-                println!("", );
+                
                 break 'game
             }
+            // #finalRound
             (x, _) if x >= TARGET => {
-                println!("{}", ("reached target score, \nbut some players still get a final turn").cyan().dimmed().italic());
-                println!(
-                    "{}{}{}",
-                    ("You won in ").bright_cyan().dimmed(),
-                    (players[i].turn_count).bright_cyan(),
-                    (" turns.").bright_cyan().dimmed()
-                );
-            // new vector for all players that have taken 1 less turn than the player who one
-            // that way all players get an equal number of turns
-            let mut final_players = last_turns(players.to_owned(), players[i].turn_count - 1);
-
-            // sort players by score
-            let mut ranking = players.clone();
-            ranking.sort_by(|a, b| b.score.cmp(&a.score));
-            let mut final_turn_scores: Vec<i32> = vec![0; final_players.len()];
-
-            let mut f = 0;
-            let mut pts_away = ranking[0].score - final_players[f].score;
-            'final_go: loop {
-                // init roll values
-                let f1 = dice_roll();
-                let f2 = dice_roll();
-                // get input
-                let mut final_roll = String::new();
-                io::stdin().read_line(&mut final_roll).expect("cant");
-
-                match final_roll.trim() {
-                    "r" => {
-                        // 🎲🎲 print roll
-                        println!(
-                        "\n{} + {} = {}\n",
-                        f1.red().on_white().bold(),
-                        f2.red().on_white().bold(),
-                        (f1 + f2).bright_green()
-                    );
-                        // check dice
-                        match (f1, f2) {
-                            (x, y) if x == y => {
-                                println!("{}", ("DOUBLES").cyan().dimmed());
-                                println!("{}{}{}", (f1 + f2).cyan(), (" * 2 = ").cyan().dimmed(), (f1 * 4).cyan());
-                                final_turn_scores[f] += f1*4;
-                            }
-                            (x, y) if x == 1 && y == 1 => {
-                                println!("{}", ("SNAKE EYES").red());
-                                println!("{}", ("you have 0pts & you lose").red().dimmed());
-                            }
-                            (x, y) if x == 1 || y == 1 => {
-                                println!("{}", ("ROLLED A 1").red());
-                                println!("{}", ("you lose").red().dimmed());
-                            }
-                            _ => final_turn_scores[f] += f1 + f2
-                        }
-                    }
-                    "q" => {
-                        final_players[f].score += final_turn_scores[i];
-                        break 'final_go
-                    }
-                    _ => {}
-                }
-            }
+                let mut f = 0;
+                // end of turn loop
+                let mut final_players = last_turns(players.to_owned(), players[i].turn_count - 1);
+                // sort players by score
+                let mut ranking = players.clone();
+                ranking.sort_by(|a, b| b.score.cmp(&a.score));
                 
+                println!("\n{} {}\n", players[i].name.to_ascii_uppercase().cyan(), ("reached target score, \nbut some players still get a final turn").cyan().dimmed().italic());
+                  
+                'end: loop {
+
+                    // sort players by score
+                let mut ranking = players.clone();
+                ranking.sort_by(|a, b| b.score.cmp(&a.score));
+                
+                    println!("\n{} {}", final_players[f].name.to_ascii_uppercase().cyan(), ("LAST TURN. GOOD LUCK.").cyan().dimmed());
+                    'final_go: loop {
+
+                    // check if player usurped first place kingdomvilleitudednessocity
+                    match (final_players[f].to_owned(), ranking[0].to_owned(), f) {
+                        (cur, first, f) if cur.score == first.score && f == final_players.len() - 1 => {
+                            println!("{}", ("you won"));
+                            break 'game
+                        }
+                        (cur, first, _) if cur.score == first.score => {
+                            println!("{}", ("set the new high score\nyou can keep going to set new high score for the last players to beat\nbut if you roll a 1 you will still lose!\ndon't be greedy. 'q' to end turn"))
+                        }
+                        _ => {}
+                    }
+                    // init roll values
+                    let f1 = dice_roll();
+                    let f2 = dice_roll();
+                    match (final_players[f].to_owned(), ranking[0].to_owned()) {
+                                (current, first_place) if current.name == first_place.name => {
+                                    println!("{} {} {}{}", current.name.to_ascii_uppercase().cyan(), ("set the new score to beat at").cyan().dimmed(), ranking[0].score.yellow(), ("pts").yellow());
+                                }
+                                
+                                _ => ()
+                            }
+                    let mut pts_away = ranking[0].score - final_players[f].score;
+                    // #pts away
+                    println!("{}{} {}\n", pts_away.red(), ("pts").red(), ("away").red().dimmed());
+
+                    
+                    // put a loop over input matches
+                    // so the user can only input valid commands\
+                    'check_input: loop {
+                    // get input
+                    let mut final_roll = String::new();
+                    io::stdin().read_line(&mut final_roll).expect("cant");
+                    match final_roll.trim() {
+                        "r" => {
+                            
+                            // 🎲🎲 print roll
+                            println!(
+                            "\n{} + {} = {}\n",
+                            f1.red().on_white().bold(),
+                            f2.red().on_white().bold(),
+                            (f1 + f2).bright_green()
+                        );
+                            // check dice
+                            match (f1, f2) {
+                                (x, y) if x == y => {
+                                    println!("{}", ("DOUBLES").cyan().dimmed());
+                                    println!("{}{}{}", (f1 + f2).cyan(), (" * 2 = ").cyan().dimmed(), (f1 * 4).cyan());
+                                    final_players[f].score += f1*4;
+                                    break 'check_input
+                                }
+                                (x, y) if x == 1 && y == 1 => {
+                                    println!("{}", ("SNAKE EYES").red());
+                                    println!("{}", ("you have 0pts & you lose").red().dimmed());
+                                    break 'final_go
+                                }
+                                (x, y) if x == 1 || y == 1 => {
+                                    println!("{}", ("ROLLED A 1").red());
+                                    println!("{}", ("you lose").red().dimmed());
+                                    break 'final_go
+                                }
+                                _ => {final_players[f].score += f1 + f2;
+                                break 'check_input}
+                            }
+                        }
+                        "q" => {
+                            match (final_players[f].to_owned(), ranking[0].to_owned()) {
+                                (current, first_place) if current.name == first_place.name => {
+                                    println!("{} {} {}{}", current.name.to_ascii_uppercase().cyan(), ("set the new score to beat at").cyan().dimmed(), ranking[0].score.yellow(), ("pts").yellow());
+                                }
+                                (current, first_place) if current.score < first_place.score => {
+                                    println!("{}", ("can't quit on the last turn"))
+                                }
+                                _ => ()
+                            }
+                            println!("{}", players[i].name);
+                            break 'final_go
+                        }
+                        _ => println!("{}", ("invalid command").italic().dimmed())
+                    }
+                }
+                }
+
+                let mut check_winner = final_players.clone();
+                check_winner.sort_by(|a, b| b.score.cmp(&a.score));
+                match f {
+                    f if f == final_players.len() - 1 => {
+                        println!("\n\t{} {}{}", ("CONGRATS").yellow(), check_winner[0].name.to_ascii_uppercase().bright_cyan(), ("!").bright_cyan());
+                        println!("\n🏆🥇{}🥇🏆 {}{}{}", (" YOU WON ").yellow().blink(), ("with ").yellow().dimmed(), check_winner[0].score.yellow(), ("pts").yellow());
+                        break 'game
+                    }
+                    _ => {f += 1}
+                }
+               
+            }/* end of end loop */  
             }
-            
-            _ => ()
+            _ => (/*nobody won yet */)
         }
-        // if last player wins then this loop is unessecary
         
 
-        // turn loop goes to next player's turn
-        // unless the index = number of players - 1
-        // then it resets: i *= 0
+        // loop goes to next player
+        // if the last player just went, 
+        // i is multiplied by 0
+        // to send it back to the first player
         let p_num_minus_one = p_num - 1;
         if i == p_num_minus_one.try_into().unwrap() {
             i *= 0
