@@ -96,16 +96,7 @@ pub fn print_milady() -> () {
 }
 
 pub fn print_instructions() -> () {
-    println!(
-        "\n       {}{}{}{}{}{}{}",
-        ("🔥"),
-        ("🎲"),
-        ("🔥"),
-        ("GREED").bright_cyan().blink(),
-        ("🔥"),
-        ("🎲"),
-        ("🔥"),
-    );
+    
     println!("{}", ("\n\n\nHOW TO PLAY").bright_cyan().dimmed().bold());
     println!(
         "{}{}{}",
@@ -188,7 +179,37 @@ pub fn set_player(name: String) -> Player {
 }
 
 fn main() {
+    fn gen_enter() -> usize {
+        thread_rng().gen_range(0..=9)
+    }
+    let rand_enter = vec![
+        String::from("tony"),
+        String::from("king bob"),
+        String::from("kevin"),
+        String::from("Pooti"),
+        String::from("hahaha"),
+        String::from("Marvel Movie Maraton"),
+        String::from("funko pops"),
+        String::from("jelly bean"),
+        String::from("rat"),
+        String::from("😈"),
+    ];
+    let enter_index = gen_enter();
+    let rand_msg = rand_enter[enter_index].to_owned();
     print_milady();
+    println!("{}{}{}", ("      type ").cyan().dimmed(), rand_msg.cyan(), (" to start").cyan().dimmed().italic());
+    'start: loop {
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("cant");
+        match input.trim() {
+            rand_msg => {
+                break 'start
+            }
+            _ => ()
+        }
+    }
+    'greed: loop {
+    
     print_instructions();
 
     // How many players?
@@ -440,54 +461,49 @@ fn main() {
                         ("😈 evil").red(),
                         players[i].evil_items.bright_red()
                     );
-                    print!(
-                        "\n{} {:?}\n",
-                        ("😇 good").blue(),
-                        players[i].good_items.bright_blue()
-                    );
-                    match (players[i].evil_items, players[i].good_items) {
-                        (EvilItems::Nothing, GoodItems::Nothing) => println!("{}", ("chance to win an item every time you roll").cyan().dimmed()),
-                        (_, GoodItems::MegaDice) => println!(
-                            "\n{}{}{}\n",
-                            ("command ").bright_magenta().dimmed(),
-                            ("mega\n").bright_magenta(),
-                            ("roll two 10-sided dice").cyan().dimmed()
-                        ),
-                        (EvilItems::LeechDice, _) => println!(
+
+                    match players[i].evil_items {
+                        EvilItems::LeechDice => println!(
                             "\n{}{}{}\n",
                             ("command ").bright_magenta().dimmed(),
                             ("leech\n").bright_magenta(),
                             ("dice values are subtracted from the score of a chosen opponent\n& given to the roller").cyan().dimmed()
                         ),
-                        (_, GoodItems::EvenOdd)=> println!(
-                            "\n{}{}{}{}{}{}\n",
-                            ("command ").bright_magenta().dimmed(),
-                            ("even\n").bright_magenta(),
-                            ("guess if first roll is even/odd").cyan().dimmed(),
-                            ("\nguess if second roll is higher/lower than first roll").cyan().dimmed(),
-                            ("\nget 1 right => dice values are doubled").cyan().dimmed(),
-                            ("\nget 2 right => dice values are quadrupled").cyan().dimmed()
-                        ),
-                        (EvilItems::Yoink, _) => println!(
+                        EvilItems::Yoink => println!(
                             "\n{}{}{}\n",
                             ("command ").bright_magenta().dimmed(),
                             ("yoink\n").bright_magenta(),
                             ("steal another player's item").cyan().dimmed()
                         ),
-                        (EvilItems::EvilDice, _) => println!(
+                        EvilItems::EvilDice => println!(
                             "\n{}{}{}{}\n",
                             ("command ").bright_magenta().dimmed(),
                             ("evil\n").bright_magenta(),
                             ("dice values are multiplied by 2").cyan().dimmed(),
                             ("\n& subtracted from all other players' scores").cyan().dimmed()
                         ),
-                        (EvilItems::ScoreSwap, _) => println!(
+                        EvilItems::ScoreSwap => println!(
                             "\n{}{}{}\n",
                             ("command ").bright_magenta().dimmed(),
                             ("swap\n").bright_magenta(),
                             ("trade scores with an opponent").cyan().dimmed()
                         ),
-                        (_, GoodItems::TripleDice) => println!(
+                        _ => {}
+                    }
+                    print!(
+                        "\n{} {:?}\n",
+                        ("😇 good").blue(),
+                        players[i].good_items.bright_blue()
+                    );
+
+                    match players[i].good_items {
+                        GoodItems::MegaDice => println!(
+                            "\n{}{}{}\n",
+                            ("command ").bright_magenta().dimmed(),
+                            ("mega\n").bright_magenta(),
+                            ("roll two 10-sided dice").cyan().dimmed()
+                        ),
+                        GoodItems::TripleDice => println!(
                             "\n{}{}{}{}{}{}{}",
                             ("command ").bright_magenta().dimmed(),
                             ("triple\n").bright_magenta(),
@@ -497,19 +513,32 @@ fn main() {
                             ("\nif you roll two 1's, your turn ends and you get no points").cyan().dimmed(),
                             ("\nif you roll three 1's you lose all of your points").cyan().dimmed(),
                         ),
+                        GoodItems::EvenOdd => println!(
+                            "\n{}{}{}{}{}{}\n",
+                            ("command ").bright_magenta().dimmed(),
+                            ("even\n").bright_magenta(),
+                            ("guess if first roll is even/odd").cyan().dimmed(),
+                            ("\nguess if second roll is higher/lower than first roll").cyan().dimmed(),
+                            ("\nget 1 right => dice values are doubled").cyan().dimmed(),
+                            ("\nget 2 right => dice values are quadrupled").cyan().dimmed()
+                        ),
+                        _ => {}
                     }
-                    println!("\n{}", ("OTHER ITEMS").bright_magenta().dimmed());
+                    
+                    println!("\n{}", ("other items").bright_green().dimmed());
 
-                    let Good_equipped = players[i].good_items;
+                    let good_equipped = players[i].good_items;
                     let equipped = players[i].evil_items;
+                    println!("{}", ("EVIL").red());
                     for i in EvilItems::iter() {
                         if i != equipped {
-                            println!("{:?}", (i).bright_magenta().bold())
+                            println!("{:?}", (i).red().dimmed())
                         }
                     }
+                    println!("{}", ("GOOD").cyan());
                     for i in GoodItems::iter() {
-                        if i != Good_equipped {
-                            println!("{:?}", (i).bright_magenta().bold())
+                        if i != good_equipped {
+                            println!("{:?}", (i).cyan().dimmed())
                         }
                     }
                     println!("");
@@ -1677,6 +1706,7 @@ fn main() {
             i += 1;
         }
     }
+}
 }
 // end game loop
 
