@@ -109,31 +109,31 @@ pub fn print_instructions() -> () {
     println!("{}", ("\n\n\nHOW TO PLAY").bright_cyan().dimmed().bold());
     println!(
         "{}{}{}",
-        ("type ").bright_purple().dimmed(),
+        ("🎲 type ").bright_purple().dimmed(),
         ("r").bright_purple().italic(),
         (" to roll the dice").bright_purple().dimmed()
     );
     println!(
         "{}{}{}",
-        ("type ").bright_purple().dimmed(),
+        ("🔚 type ").bright_purple().dimmed(),
         ("q").bright_purple().italic(),
         (" to end turn").bright_purple().dimmed()
     );
     println!(
         "{}{}{}",
-        ("type ").bright_purple().dimmed(),
+        ("💯 type ").bright_purple().dimmed(),
         ("s").bright_purple().italic(),
         (" to see scoreboard").bright_purple().dimmed()
     );
     println!(
         "{}{}{}",
-        ("type ").bright_purple().dimmed(),
+        ("🎒 type ").bright_purple().dimmed(),
         ("i").bright_purple().italic(),
         (" to check item bag").bright_purple().dimmed()
     );
     println!(
         "{}{}{}",
-        ("type ").bright_purple().dimmed(),
+        ("💻 type ").bright_purple().dimmed(),
         ("c").bright_purple().italic(),
         (" to see commands\n").bright_purple().dimmed()
     );
@@ -149,7 +149,7 @@ pub fn print_instructions() -> () {
         ("On your turn, roll the dice as many times as you want,")
             .red()
             .dimmed(),
-        (" but").red()
+        (" but❗").red()
     );
     println!(
         "{}{}{}{}{}{}",
@@ -158,23 +158,23 @@ pub fn print_instructions() -> () {
         (" you get ").red().dimmed(),
         ("0").red(),
         ("pts").red(),
-        (" points and your turn is over").red().dimmed()
+        (" points and your turn is over.").red().dimmed()
     );
     println!(
         "{}{}{}",
         ("If you roll ").cyan().dimmed(),
         ("DOUBLES").cyan().italic(),
-        (" those dice are doubles in value").cyan().dimmed()
+        (" those dice are doubles in value.").cyan().dimmed()
     );
     println!(
         "{}{}{}",
         ("If you roll ").red().dimmed(),
         ("SNAKE EYES").red().italic(),
-        (", you lose all of your points").red().dimmed()
+        (", you lose all of your points.").red().dimmed()
     );
-    println!("\n{}", ("GOOD LUCK!").bright_green().bold());
-    println!("{}", ("DON'T BE GREEDY").dimmed().bright_green().bold());
-    println!("{}", ("\nHow many players?").bright_blue());
+    println!("\n{}", ("🍀 GOOD LUCK!").bright_green().bold());
+    println!("{}", ("😈 DON'T BE GREEDY").dimmed().bright_green().bold());
+    println!("{}", ("\nHow many players❔").bright_blue());
 }
 
 pub fn set_player(name: String) -> Player {
@@ -218,7 +218,12 @@ fn main() {
         let player: Player = set_player(trimmed_name);
 
         match new_name.trim() {
-            "Iman" => println!("{}", ("Hello Pooti").bright_cyan().italic()),
+            "Iman" => println!("{}", ("Hello Pooti 🖤").bright_cyan()),
+            "iman" => println!("{}", ("Hello Pooti 🖤").bright_cyan()),
+            "tony" => println!("{}", ("Hello Pooti 🐀").bright_cyan()),
+            "Tony" => println!("{}", ("Hello Pooti 🐀").bright_cyan()),
+            "gerald" => println!("{}", ("Hello GERR BEAR 🐼").bright_cyan()),
+            "Gerald" => println!("{}", ("Hello Pooti 🐼").bright_cyan()),
             " " => println!("{}", ("Please Enter a Name").dimmed()),
             _ => (),
         }
@@ -247,10 +252,10 @@ fn main() {
 
     // vector of random prompts to spice it up
     let random_prompts: Vec<String> = vec![
-        String::from(", ⌚ TIME TO ROLL"),
-        String::from(", 😎 IT WOULD BE COOL IF YOU ROLLED"),
-        String::from(", 🍀 GOOD LUCK!"),
-        String::from(", 🐌 TAKE YOUR TIME"),
+        String::from("⌚ TIME TO ROLL"),
+        String::from("😎 IT WOULD BE COOL IF YOU ROLLED"),
+        String::from("🍀 GOOD LUCK!"),
+        String::from("🐌 TAKE YOUR TIME"),
     ];
 
     // random messages after rolling 1s
@@ -262,6 +267,12 @@ fn main() {
     ];
 
     // snake eyes
+    let rand_snake: Vec<String> = vec![
+        String::from("😖 bummer dude"),
+        String::from("🌽 Aw Shucks"),
+        String::from("🕴️🕴️🕴️🕴️🕴️"),
+        String::from("🌬️ that blows"),
+    ];
     // doubles
     let dubs_msg: Vec<String> = vec![
         String::from("🤠🎉DOUBLES🎉🤠"),
@@ -308,8 +319,8 @@ fn main() {
     }
 
     match item_toggle {
-        1 => println!("\n{}", ("ITEMS ENABLED").italic().cyan()),
-        0 => println!("\n{}", ("items off").italic().cyan()),
+        1 => println!("{}", ("✅ ITEMS ENABLED").cyan()),
+        0 => println!("{}", ("🚫 ITEMS DISABLED").cyan()),
         _ => println!("{}", ("wackydacky").italic().cyan()),
     }
 
@@ -321,15 +332,15 @@ fn main() {
         let mut turn_scores: Vec<i32> = vec![0; p_num.try_into().unwrap()];
         // roll message
         println!(
-            "\n\n{}{}\n",
+            "\n{}{}",
             players[i]
                 .name
                 .to_ascii_uppercase()
                 .bold()
-                .italic()
                 .bright_green(),
-            random_prompts[index].cyan()
+            (" YOUR TURN❕")
         );
+        println!("{}", random_prompts[index].bright_cyan());
 
         'turn: loop {
             // intialize roll values
@@ -356,10 +367,36 @@ fn main() {
                 item_toggle,
             ) {
                 ("c", _, _, _) => {
-                    println!("{} {}", ("r").green(), ("roll dice").green().dimmed());
-                    println!("{} {}", ("q").green(), ("end turn").green().dimmed());
-                    println!("{} {}", ("s").green(), ("show scoreboard").green().dimmed());
-                    println!("{} {}", ("i").green(), ("check items").green().dimmed());
+                 println!(
+        "\n{}{}{}",
+        ("🎲 type ").bright_purple().dimmed(),
+        ("r").bright_purple().italic(),
+        (" to roll the dice").bright_purple().dimmed()
+    );
+    println!(
+        "{}{}{}",
+        ("🔚 type ").bright_purple().dimmed(),
+        ("q").bright_purple().italic(),
+        (" to end turn").bright_purple().dimmed()
+    );
+    println!(
+        "{}{}{}",
+        ("💯 type ").bright_purple().dimmed(),
+        ("s").bright_purple().italic(),
+        (" to see scoreboard").bright_purple().dimmed()
+    );
+    println!(
+        "{}{}{}",
+        ("🎒 type ").bright_purple().dimmed(),
+        ("i").bright_purple().italic(),
+        (" to check item bag").bright_purple().dimmed()
+    );
+    println!(
+        "{}{}{}",
+        ("💻 type ").bright_purple().dimmed(),
+        ("c").bright_purple().italic(),
+        (" to see commands\n").bright_purple().dimmed()
+    );   
                 }
                 ("q", _, _, _) => {
                     println!(
@@ -386,7 +423,7 @@ fn main() {
                     let amount: i32 = auto_roll.parse().unwrap();
                     println!(
                         "{}",
-                        ("\ncool thumbs up, we'll get back to you with this feature")
+                        ("\ncool 👍, we'll get back to you with this feature")
                             .dimmed()
                             .italic()
                     );
@@ -400,16 +437,16 @@ fn main() {
                     );
                     print!(
                         "{} {:?}",
-                        ("evil").red(),
+                        ("😈 evil").red(),
                         players[i].evil_items.bright_red()
                     );
                     print!(
                         "\n{} {:?}\n",
-                        ("good").blue(),
+                        ("😇 good").blue(),
                         players[i].good_items.bright_blue()
                     );
                     match (players[i].evil_items, players[i].good_items) {
-                        (EvilItems::Nothing, GoodItems::Nothing) => println!("{}", ("1 in 4 chance to earn an item everytime you roll").cyan().dimmed()),
+                        (EvilItems::Nothing, GoodItems::Nothing) => println!("{}", ("chance to win an item every time you roll").cyan().dimmed()),
                         (_, GoodItems::MegaDice) => println!(
                             "\n{}{}{}\n",
                             ("command ").bright_magenta().dimmed(),
@@ -447,7 +484,7 @@ fn main() {
                         (EvilItems::ScoreSwap, _) => println!(
                             "\n{}{}{}\n",
                             ("command ").bright_magenta().dimmed(),
-                            ("score swap\n").bright_magenta(),
+                            ("swap\n").bright_magenta(),
                             ("trade scores with an opponent").cyan().dimmed()
                         ),
                         (_, GoodItems::TripleDice) => println!(
@@ -493,7 +530,7 @@ fn main() {
                             x if x == ranking[last].score => {
                                 println!(
                                     "{} {} {}",
-                                    (" LAST! ").white().on_red().blink(),
+                                    (" LAST‼️" ).white().on_red().blink(),
                                     i.name.to_ascii_uppercase().bright_cyan(),
                                     i.score.bright_green().bold(),
                                 );
@@ -501,7 +538,7 @@ fn main() {
                             x if x == ranking[0].score => {
                                 println!(
                                     "{} {} {}",
-                                    ("1st").yellow().blink(),
+                                    ("✨👑✨"),
                                     i.name.to_ascii_uppercase().bright_cyan(),
                                     i.score.bright_green().bold()
                                 );
@@ -526,7 +563,7 @@ fn main() {
                             x if x == ranking[3].score => {
                                 println!(
                                     "{} {} {}",
-                                    ("4th").yellow(),
+                                    ("4th").blue(),
                                     i.name.to_ascii_uppercase().bright_cyan(),
                                     i.score.bright_green().bold()
                                 );
@@ -550,7 +587,7 @@ fn main() {
                             x if x == ranking[6].score => {
                                 println!(
                                     "{} {} {}",
-                                    ("7th ").yellow(),
+                                    ("7th").yellow(),
                                     i.name.to_ascii_uppercase().bright_cyan(),
                                     i.score.bright_green().bold()
                                 );
@@ -595,9 +632,9 @@ fn main() {
                     match (r1, r2) {
                         //snake eyes
                         (1, 1) => {
-                            println!("\n{}", ("  SNAKE EYES  ").on_bright_magenta());
+                            println!("{}", rand_snake[index]);
                             players[i].score *= 0;
-                            println!("{}", ("TOTAL SCORE 0").red());
+                            println!("{}", ("TOTAL SCORE 0❗").red());
                             players[i].turn_count += 1;
                             break 'turn;
                         }
@@ -762,9 +799,9 @@ fn main() {
                     match (r1, r2) {
                         //snake eyes
                         (1, 1) => {
-                            println!("\n{}", ("  SNAKE EYES  ").on_bright_magenta());
+                            println!("{}", rand_snake[index]);
                             players[i].score *= 0;
-                            println!("{}", ("TOTAL SCORE 0").red());
+                            println!("{}", ("TOTAL SCORE 0❗").red());
                             players[i].turn_count += 1;
                             break 'turn;
                         }
@@ -856,6 +893,7 @@ fn main() {
                 ("triple", _, GoodItems::TripleDice, 1) => {
                     // use tripleDice
                     players[i].good_items = GoodItems::Nothing;
+                    println!("{}", ("ROLLED THE TRIPLE DICE🎲🎲🎲").green());
                     // 🎲🎲 print roll
                     println!(
                         "\n{} + {} + {} = {}\n",
@@ -867,6 +905,7 @@ fn main() {
                     match (r1, r2, r3) {
                         // triple ones
                         (1, 1, 1) => {
+                            print!("{}", ("👁️👁️👁️"));
                             print!("{}", ("WOW. UNLUCKY. SAD."));
                             print!(
                                 "{}{}",
@@ -1003,31 +1042,36 @@ fn main() {
                     }
                 }
                 ("evil", EvilItems::EvilDice, _, 1) => {
+                    // use item
+                    players[i].evil_items = EvilItems::Nothing;
+                    let evil_score = r1 + r2 + r1 + r2;
                     println!(
-                        "\n{}{}{}",
-                        players[i].name.to_ascii_uppercase().on_red().bold(),
+                        "\n{}{}\n{}",
+                        players[i].name.to_ascii_uppercase().red().bold(),
                         (" rolled the ").red(),
-                        ("EVIL DICE").red().bold().blink()
+                        ("👹EVIL DICE👹").red().bold().blink()
                     );
                     println!(
-                        "\n{} {} {} {} {}\n",
+                        "\n{} {} {} {} {} {} {} {} {}\n",
                         r1.white().on_red().bold(),
                         ("+").red().dimmed(),
                         r2.white().on_red().bold(),
                         ("=").red().dimmed(),
-                        (r1 + r2).bright_red()
+                        (r1 + r2).bright_red(),
+                        ("*").red().dimmed(),
+                        ("2").red(),
+                        ("=").red().dimmed(),
+                        evil_score.red().blink(),
                     );
-                    // use item
-                    players[i].evil_items = EvilItems::Nothing;
-                    let evil_score = r1 + r2 + r1 + r2;
                     println!(
                         "{}{}{}{}{}",
                         ("-").red().bold().blink(),
                         evil_score.red().blink().bold(),
                         ("pts").red().bold().blink(),
                         (" for everyone except ").red(),
-                        players[i].name.to_ascii_uppercase().on_red().bold()
+                        players[i].name.to_ascii_uppercase().red().bold()
                     );
+                    println!("😈🎲😈🎲😈");
                     turn_scores[i] += evil_score;
                     // pnum - 1 so the index wont go out of bounds
 
@@ -1039,6 +1083,24 @@ fn main() {
                         }
                         e += 1
                     }
+                }
+                ("911", _, _, _) => {
+                    println!("✈️🏢🏢💣💥");
+                                println!("🪖✡️✡️🐐");
+                                println!("{}", ("BUILDING 7 BONUS").yellow().blink());
+                                println!("{}", ("all players get +7pts❕").yellow());
+
+                                let mut e: usize = 0;
+                                loop {
+                                    players[e].score += 7;
+                                    println!("{} {}", players[e].name.to_ascii_uppercase().green(), ("+7pts").green());
+                                    if e == (p_num - 1).try_into().unwrap() {
+                                    break;
+                                }
+                                    e += 1
+                                }
+                                    turn_scores[i] += m1 + m2
+
                 }
                 ("mega", _, GoodItems::MegaDice, 1) => {
                     {
@@ -1060,7 +1122,7 @@ fn main() {
                         match (m1, m2) {
                             //snake eyes
                             (1, 1) => {
-                                println!("\n{}", ("  SNAKE EYES  ").on_bright_magenta());
+                                println!("\n{}", rand_snake[index].bright_green());
                                 players[i].score *= 0;
                                 println!("{}", ("TOTAL SCORE 0").red());
                                 players[i].turn_count += 1;
@@ -1086,21 +1148,34 @@ fn main() {
                                 println!("{} {}", ("TURN SCORE").dimmed(), turn_scores[i].green(),);
                             }
                             (6, 9) => {
-                                println!("{}", ("good_items sunglasses emoji"));
+                                println!("{}", ("😎"));
                                 turn_scores[i] += m1 + m2
                             }
                             (3, 11) => {
-                                println!("{}", ("woah amber is the color of your energy"));
+                                println!("{}", (" INVESTIGATE 311 ").yellow());
                                 turn_scores[i] += m1 + m2
                             }
                             (7, 11) => {
-                                println!("{}", ("711 bonus! free slurpees for everyone"));
+                                println!("{}", ("🏪🍩"));
                                 turn_scores[i] += m1 + m2
                             }
                             (9, 11) => {
-                                println!("{}", ("plane building emojis 911 in rememberance of building 7, each player is awarded +7pts!"));
-                                turn_scores[i] += m1 + m2
-                            }
+                                println!("✈️🏢🏢💣💥");
+                                println!("🪖✡️✡️🐐");
+                                println!("{}", ("BUILDING 7 BONUS").yellow().blink());
+                                println!("{}", ("all players get +7pts❕").yellow());
+
+                                let mut e: usize = 0;
+                                loop {
+                                    players[e].score += 7;
+                                    println!("{} {}", players[e].name.to_ascii_uppercase().green(), ("+7pts").green());
+                                    if e == (p_num - 1).try_into().unwrap() {
+                                    break;
+                                }
+                                    e += 1
+                                }
+                                    turn_scores[i] += m1 + m2
+                                }
                             //normal roll
                             _ => {
                                 turn_scores[i] += m1 + m2;
