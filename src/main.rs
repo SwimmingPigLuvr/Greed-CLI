@@ -195,12 +195,12 @@ fn main() {
     let rand_enter = vec![
         String::from("tony"),
         String::from("king bob"),
-        String::from("kevin"),
+        String::from("toitel"),
         String::from("Pooti"),
         String::from("hahaha"),
         String::from("Marvel Movie Maraton"),
         String::from("funko pops"),
-        String::from("jelly bean"),
+        String::from("153fdb3825592639464c1f3cd0f6acd02c03a270b0020f48819d446ac40e7bd8"),
         String::from("rat"),
         String::from("😈"),
     ];
