@@ -4,7 +4,8 @@ cli version of a fun simple dice game
 
 
 
-'cargo run' to start
+once in directory run "cargo install --path ."
+now type "greed" from any directory and the game is playable
 
 
 
