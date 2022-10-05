@@ -26,7 +26,7 @@ pub struct Player {
     good_items: GoodItems,
 }
 
-const TARGET: i32 = 10;
+const TARGET: i32 = 100;
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, Copy, Default, Ord, PartialOrd)]
 pub enum EvilItems {
@@ -94,6 +94,8 @@ pub fn print_milady() -> () {
     println!("{}", ("      .#@@@@@@@@@@@@@@@@O").cyan().dimmed());
     println!("{}", ("      °@@@@@@@@@@@@@@@@@#°").cyan().dimmed());
 }
+
+
 
 pub fn print_instructions() -> () {
     
@@ -179,9 +181,17 @@ pub fn set_player(name: String) -> Player {
 }
 
 fn main() {
+    
     fn gen_enter() -> usize {
         thread_rng().gen_range(0..=9)
     }
+    fn gen_image() -> usize {
+        thread_rng().gen_range(0..=2)
+    }
+    let image = vec![
+        String::from("\n\n      .*O@@@@@@@@@@#o*.\n   *#@@@@@@@@@@@@@@@@@@#o.\n  O@@@@@@@@@@@@@@@@@@@@@@#°\n *@@@@@@@@@@@@@@@@@@@@@@@@*\n *@@@@@@@@@@@@@@@@@@Oo.@@o\n °#@@@@@@@o   .@@@@@   ##.\n .O@@@@@@@#*  .@@@@@@O#@o\n   .oO@@@@@@@@@@@@@@@@@o\n        .*o#@@@@@@@@#*.\n         *O@@@@@@@@@@O°\n       .#@@@@@@@@@@@@@@*\n       o@@@@@@@@@@@@@@@@°\n      .#@@@@@@@@@@@@@@@@O\n      °@@@@@@@@@@@@@@@@@#°"),
+        String::from("👹👹👹👹👹😈👹👹👹👹😈😈😈😈")
+    ];
     let rand_enter = vec![
         String::from("tony"),
         String::from("king bob"),
@@ -194,18 +204,32 @@ fn main() {
         String::from("rat"),
         String::from("😈"),
     ];
+
+    let rand_nope = vec![
+        String::from("nope"),
+        String::from("wrong."),
+        String::from("try again"),
+        String::from("come on man"),
+        String::from("👹"),
+        String::from("check ur speling"),
+        String::from("hurry up"),
+        String::from("insert stupid emoji here in vim"),
+        String::from("you keep getting it wrong dude"),
+        String::from("NO"),
+    ];
     let enter_index = gen_enter();
     let rand_msg = rand_enter[enter_index].to_owned();
+    let rand_no = rand_nope[enter_index].to_owned();
     print_milady();
     println!("{}{}{}", ("      type ").cyan().dimmed(), rand_msg.cyan(), (" to start").cyan().dimmed().italic());
     'start: loop {
         let mut input = String::new();
         io::stdin().read_line(&mut input).expect("cant");
         match input.trim() {
-            rand_msg => {
+            x if x == rand_msg => {
                 break 'start
             }
-            _ => ()
+            _ => println!("{}", rand_no.red().dimmed())
         }
     }
     'greed: loop {
@@ -213,10 +237,12 @@ fn main() {
     print_instructions();
 
     // How many players?
+    
     let mut p_string = String::new();
     io::stdin().read_line(&mut p_string).expect("cant read");
     let p_string = p_string.trim();
     // change p string into and i32 so we can see how many players to create
+    
     let p_num: i32 = p_string.parse().unwrap();
     // create empty vec to hold players
     let mut players: Vec<Player> = Vec::new();
@@ -556,14 +582,7 @@ fn main() {
                     ranking.sort_by(|a, b| b.score.cmp(&a.score));
                     for i in ranking.iter() {
                         match i.score {
-                            x if x == ranking[last].score => {
-                                println!(
-                                    "{} {} {}",
-                                    (" LAST‼️" ).white().on_red().blink(),
-                                    i.name.to_ascii_uppercase().bright_cyan(),
-                                    i.score.bright_green().bold(),
-                                );
-                            }
+                            
                             x if x == ranking[0].score => {
                                 println!(
                                     "{} {} {}",
@@ -635,6 +654,14 @@ fn main() {
                                     i.name.to_ascii_uppercase().bright_cyan(),
                                     i.score.bright_green().bold(),
                                     ("SAD").truecolor(233, 94, 70)
+                                );
+                            }
+                            x if x == ranking[last].score => {
+                                println!(
+                                    "{} {} {}",
+                                    (" LAST‼️" ).white().on_red().blink(),
+                                    i.name.to_ascii_uppercase().bright_cyan(),
+                                    i.score.bright_green().bold(),
                                 );
                             }
                             _ => {
@@ -899,7 +926,7 @@ fn main() {
                         GoodItems::MegaDice
                     )
                 }
-                ("score swap", item, _, 1) if item != EvilItems::ScoreSwap => println!(
+                ("swap", item, _, 1) if item != EvilItems::ScoreSwap => println!(
                     "{}{:?}",
                     ("don't have ").dimmed().italic(),
                     EvilItems::ScoreSwap
@@ -1574,7 +1601,7 @@ fn main() {
                 ("in").yellow().dimmed(), players[i].turn_count.yellow(), ("turns").yellow().dimmed()
             );
                 
-                break 'game
+                break 'greed
             }
             // #finalRound
             (x, _) if x >= TARGET => {
@@ -1600,7 +1627,7 @@ fn main() {
                     match (final_players[f].to_owned(), ranking[0].to_owned(), f) {
                         (cur, first, f) if cur.score == first.score && f == final_players.len() - 1 => {
                             println!("{}", ("you won"));
-                            break 'game
+                            break 'greed
                         }
                         (cur, first, _) if cur.score == first.score => {
                             println!("{}", ("set the new high score\nyou can keep going to set new high score for the last players to beat\nbut if you roll a 1 you will still lose!\ndon't be greedy. 'q' to end turn"))
