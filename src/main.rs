@@ -198,9 +198,9 @@ fn main() {
         String::from("toitel"),
         String::from("Pooti"),
         String::from("hahaha"),
-        String::from("Marvel Movie Maraton"),
+        String::from("legalize nuclear bombs"),
         String::from("funko pops"),
-        String::from("153fdb3825592639464c1f3cd0f6acd02c03a270b0020f48819d446ac40e7bd8"),
+        String::from("bubbles"),
         String::from("rat"),
         String::from("😈"),
     ];
@@ -490,48 +490,48 @@ fn main() {
 
                     match players[i].evil_items {
                         EvilItems::LeechDice => println!(
-                            "\n{}{}{}\n",
-                            ("command ").bright_magenta().dimmed(),
+                            "\n{}{}{}",
+                            ("🔑 command ").bright_magenta().dimmed(),
                             ("leech\n").bright_magenta(),
                             ("dice values are subtracted from the score of a chosen opponent\n& given to the roller").cyan().dimmed()
                         ),
                         EvilItems::Yoink => println!(
-                            "\n{}{}{}\n",
-                            ("command ").bright_magenta().dimmed(),
+                            "\n{}{}{}",
+                            ("🔑 command ").bright_magenta().dimmed(),
                             ("yoink\n").bright_magenta(),
                             ("steal another player's item").cyan().dimmed()
                         ),
                         EvilItems::EvilDice => println!(
-                            "\n{}{}{}{}\n",
-                            ("command ").bright_magenta().dimmed(),
+                            "\n{}{}{}{}",
+                            ("🔑 command ").bright_magenta().dimmed(),
                             ("evil\n").bright_magenta(),
                             ("dice values are multiplied by 2").cyan().dimmed(),
                             ("\n& subtracted from all other players' scores").cyan().dimmed()
                         ),
                         EvilItems::ScoreSwap => println!(
-                            "\n{}{}{}\n",
-                            ("command ").bright_magenta().dimmed(),
+                            "\n{}{}{}",
+                            ("🔑 command ").bright_magenta().dimmed(),
                             ("swap\n").bright_magenta(),
                             ("trade scores with an opponent").cyan().dimmed()
                         ),
                         _ => {}
                     }
                     print!(
-                        "\n{} {:?}\n",
+                        "{} {:?}",
                         ("😇 good").blue(),
                         players[i].good_items.bright_blue()
                     );
 
                     match players[i].good_items {
                         GoodItems::MegaDice => println!(
-                            "\n{}{}{}\n",
-                            ("command ").bright_magenta().dimmed(),
+                            "\n{}{}{}",
+                            ("🔑 command ").bright_magenta().dimmed(),
                             ("mega\n").bright_magenta(),
                             ("roll two 10-sided dice").cyan().dimmed()
                         ),
                         GoodItems::TripleDice => println!(
                             "\n{}{}{}{}{}{}{}",
-                            ("command ").bright_magenta().dimmed(),
+                            ("🔑 command ").bright_magenta().dimmed(),
                             ("triple\n").bright_magenta(),
                             ("roll 3 dice").cyan().dimmed(),
                             ("\nif you roll the same number 3 times, those numbers will be tripled").cyan().dimmed(),
@@ -540,8 +540,8 @@ fn main() {
                             ("\nif you roll three 1's you lose all of your points").cyan().dimmed(),
                         ),
                         GoodItems::EvenOdd => println!(
-                            "\n{}{}{}{}{}{}\n",
-                            ("command ").bright_magenta().dimmed(),
+                            "\n{}{}{}{}{}{}",
+                            ("🔑 command ").bright_magenta().dimmed(),
                             ("even\n").bright_magenta(),
                             ("guess if first roll is even/odd").cyan().dimmed(),
                             ("\nguess if second roll is higher/lower than first roll").cyan().dimmed(),
@@ -1141,8 +1141,8 @@ fn main() {
                     }
                 }
                 ("911", _, _, _) => {
-                    println!("✈️🏢🏢💣💥");
-                                println!("🪖✡️✡️🐐");
+                    println!("\n  ✈️🏢🏢💣💥");
+                                println!("  🪖✡️✡️🐐");
                                 println!("{}", ("BUILDING 7 BONUS").yellow().blink());
                                 println!("{}", ("all players get +7pts❕").yellow());
 
@@ -1292,7 +1292,7 @@ fn main() {
                                             "y" => {
                                                 // 🎲🎲 print roll
                                                 println!(
-                                                    "\n{} {} {} {} {}\n",
+                                                    "\n{} {} {} {} {}",
                                                     r1.white().on_purple().bold(),
                                                     ("+").purple(),
                                                     r2.white().on_purple().bold(),
@@ -1302,49 +1302,46 @@ fn main() {
                                                 let pts_stolen = (r1 + r2) * 2;
                                                 println!(
                                                     "{}{}",
-                                                    ("and the multiplier roll is...").purple(),
+                                                    ("multiplier ").purple(),
                                                     r3.white().on_purple().bold()
                                                 );
                                                 match r3 {
                                                     x if x >= 4 => {
+                                                        
                                                         println!(
-                                                            "{}{}{}{}{}{}\n",
-                                                            pts_stolen.purple().bold(),
-                                                            ("pts ").purple().bold(),
-                                                            ("will be leeched from ")
-                                                                .purple()
-                                                                .dimmed(),
-                                                            players[i]
-                                                                .name
-                                                                .to_ascii_uppercase()
-                                                                .purple()
-                                                                .bold(),
-                                                            (" and given to ").purple().dimmed(),
-                                                            cur.to_ascii_uppercase()
-                                                                .purple()
-                                                                .bold()
-                                                        );
+                                                    "{} {}{}{}\n{} {}{}{}",
+                                                    cur
+                                                        .to_ascii_uppercase()
+                                                        .purple()
+                                                        .bold(),
+                                                    ("+").green(),
+                                                    (r1 + r2 + r1 + r2).green(),
+                                                    ("pts").green(),
+                                                    players[i].name.to_ascii_uppercase().purple().bold(),
+                                                    ("-").red(),
+                                                    (r1 + r2 + r1 + r2).red(),
+                                                    ("pts").red(),
+                                                );
                                                         players[i].score -= pts_stolen;
                                                         players[n].score += pts_stolen;
                                                     }
                                                     x if x <= 3 => {
-                                                        println!(
-                                                            "{}{}{}{}{}{}\n",
-                                                            pts_stolen.purple().bold(),
-                                                            ("pts ").purple().bold(),
-                                                            ("will be leeched from ")
-                                                                .purple()
-                                                                .dimmed(),
-                                                            cur.to_ascii_uppercase()
-                                                                .purple()
-                                                                .bold(),
-                                                            (" and given to ").purple().dimmed(),
-                                                            players[i]
-                                                                .name
-                                                                .to_ascii_uppercase()
-                                                                .purple()
-                                                                .bold()
-                                                        );
+                                                println!(
+                                                    "{} {}{}{}\n{} {}{}{}",
+                                                    players[i]
+                                                        .name
+                                                        .to_ascii_uppercase()
+                                                        .purple()
+                                                        .bold(),
+                                                    ("+").green(),
+                                                    (r1 + r2 + r1 + r2).green(),
+                                                    ("pts").green(),
+                                                    cur.to_ascii_uppercase().purple().bold(),
+                                                    ("-").red(),
+                                                    (r1 + r2 + r1 + r2).red(),
+                                                    ("pts").red(),
+                                                );
+                                                        
                                                         players[i].score += pts_stolen;
                                                         players[n].score -= pts_stolen;
                                                     }
@@ -1367,17 +1364,19 @@ fn main() {
                                                     ("no multiplier").purple().dimmed().italic()
                                                 );
                                                 println!(
-                                                    "{}{}{}{}{}{}\n",
+                                                    "{} {}{}{}\n{} {}{}{}",
                                                     players[i]
                                                         .name
                                                         .to_ascii_uppercase()
                                                         .purple()
                                                         .bold(),
-                                                    (" leeched ").purple(),
-                                                    (r1 + r2).purple().bold().blink(),
-                                                    ("pts").purple().bold().blink(),
-                                                    (" from ").purple(),
-                                                    cur.to_ascii_uppercase().purple().bold()
+                                                    ("+").green(),
+                                                    (r1 + r2).green(),
+                                                    ("pts").green(),
+                                                    cur.to_ascii_uppercase().purple().bold(),
+                                                    ("-").red(),
+                                                    (r1 + r2).red(),
+                                                    ("pts").red(),
                                                 );
                                                 players[i].score += r1 + r2;
                                                 players[n].score -= r1 + r2;
@@ -1504,89 +1503,139 @@ fn main() {
                     println!("{}", ("Keep Rolling\n").dimmed().italic())
                 }
                 ("swap", EvilItems::ScoreSwap, _, 1) => {
-                    println!(
-                        "{}",
-                        (" UNDER CONSTRUCTION check back later ")
-                            .on_bright_red()
-                            .bold()
-                    );
-                    // use item
-                    players[i].evil_items = EvilItems::Nothing;
-                    // println!("{}", (" CHOOSE A PLAYER TO SWAP SCORES WITH ").black().on_truecolor(255, 95, 31));
+                    println!("\n{}\n", ("select a player to swap scores").truecolor(66, 66, 66));
 
-                    // 'outer: loop {
-                    //     // take input
-                    //     let mut input = String::new();
-                    //     io::stdin().read_line(&mut input).expect("cannot");
-                    //     let swap_victim = input.trim();
+                    'outer: loop {
+                        // take input
+                        let mut input = String::new();
+                        io::stdin().read_line(&mut input).expect("cant");
+                        let victim = input.trim();
 
-                    //     //see if input matches any player names
-                    //     let mut s = 0;
-                    //     'inner: loop {
-                    //         // init variable to hold current player
-                    //         let cur = players[s].name.to_owned();
-                    //         match swap_victim {
-                    //             // valid victim
-                    //             x if x == cur => {
-                    //                 println!("{}{}{}", players[i].name.to_ascii_uppercase().truecolor(255, 95, 23).bold(), (" swapped scores with ").truecolor(255, 95, 23).dimmed(), players[s].name.to_ascii_uppercase().truecolor(255, 95, 23).bold());
-                    //                 println!("{}", ("check scoreboard :)"));
+                        // loop to see if input matches any players
+                        let mut n = 0;
+                        'inner: loop {
+                            let cur = players[n].to_owned();
+                            match victim {
+                                
+                                x if x == cur.name => {
+                                    println!("{}", ("that's just mean").dimmed());
+                                    println!("{}", ("check the scoreboard").italic());
+                                    let old_score = players[i].score.clone();
+                                    let swapped_score = cur.score.clone();
+                                    players[i].score = swapped_score;
+                                    players[n].score = old_score;
+                                    break 'outer;
+                                }
+                                _ => n += 1,
+                            }
 
-                    //                 //swap scores | score swap
-                    //                 let (mut a, mut b) = (players[i].score, players[s].score);
+                            if n == p_num.try_into().unwrap() {
+                                println!(
+                                    "{}",
+                                    ("please choose a valid player").dimmed().italic().purple()
+                                );
+                                break 'inner;
+                            }
+                        } // inner end
+                    } /* end loop */
 
-                    //                 mem::swap(&mut a, &mut b);
-                    //                 println!("{}{}{}{}", players[i].name, (" now has "), players[i].score, ("pts"));
-                    //                 println!("{}{}{}{}", players[s].name, (" now has "), players[s].score, ("pts"));
-
-                    //                 break 'outer
-                    //             }
-                    //             _ => s += 1,
-                    //         }
-                    //         if s == p_num.try_into().unwrap() {
-                    //             println!("{}", ("please choose valid target").dimmed().italic().truecolor(255, 95, 23));
-                    //             break 'inner;
-                    //         }
-
-                    //     } // inner end
-
-                    // } // outer end
                 }
                 ("yoink", EvilItems::Yoink, _, 1) => {
-                    println!(
-                        "{}{}",
-                        (" UNDER CONSTRUCTION ").white().on_yellow().bold(),
-                        (" check back later").dimmed().italic()
-                    );
-                    players[i].evil_items = EvilItems::Nothing;
-                    // println!("{}{}{}", players[i].name.to_ascii_uppercase().on_truecolor(251, 72, 196).bold(), (" used ").truecolor(251, 72, 196), ("YOINK").truecolor(251, 72, 196).bold().blink());
-                    // println!("{}", (" SELECT A PLAYER TO STEAL AN ITEM FROM ").on_truecolor(251, 72, 196).bold());
-                    // 'outer: loop {
-                    //     let mut input = String::new();
-                    //     io::stdin().read_line(&mut input).expect("cant");
-                    //     let target = input.trim();
+                    
 
-                    //     let mut y = 0;
-                    //     'target: loop {
-                    //         let cur = players[y].name.to_owned();
-                    //         let cur_item = players[y].items.to_owned();
-                    //         match (target, cur_item) {
-                    //             ("none", _) => {println!("{}", ("no one was yoinked").dimmed().italic().truecolor(251, 72, 196));break 'outer}
-                    //             (x, Items::Nothing) if x == cur => {
-                    //                 println!("{}", ("no items to steal"));
-                    //                 break 'target
-                    //             }
-                    //             (x, _) if x == cur => {
-                    //                 println!("get yoinked son");
-                    //                 break 'outer
-                    //             }
-                    //             _ => y += 1
-                    //         }
-                    //         if y == p_num.try_into().unwrap() {
-                    //             println!("{}", ("please choose valid target or 'none'").dimmed().italic());
-                    //             break 'target
-                    //         }
-                    //     } //end target loop
-                    // } //end loop
+                    // yoink summary
+                    // player is asked who to yoink item from
+                    // if that name doesnt exist they must enter a correct name
+                    // if name exists but player has no items then they must choose again
+
+
+                    println!("\n{}\n", ("select a player to yoink their items").truecolor(33, 33, 33));
+
+                    'outer: loop {
+                        // take input
+                        let mut input = String::new();
+                        io::stdin().read_line(&mut input).expect("cant");
+                        let victim = input.trim();
+
+                        // loop to see if input matches any players
+                        let mut n = 0;
+                        'inner: loop {
+                            let cur = players[n].to_owned();
+                            match victim {
+                                // yoink 2 items
+                                x if x == cur.name && cur.good_items != GoodItems::Nothing && cur.evil_items != EvilItems::Nothing => {
+                                    println!(
+                                        "\n{}{}{:?}\n{}{}{:?}",
+                                        players[i].name.to_ascii_uppercase().purple(),
+                                        (" +1 ").green(),
+                                        cur.good_items.cyan(),
+                                        players[i].name.to_ascii_uppercase().purple(),
+                                        (" +1 ").green(),
+                                        cur.evil_items.cyan(),
+                                        
+                                    );
+                                    let item_yoinked = cur.good_items;
+                                    players[i].good_items = item_yoinked;
+                                    println!(
+                                        "\n{}{}{:?}\n{}{}{:?}",
+                                        cur.name.to_ascii_uppercase().purple(),
+                                        (" -1 ").red(),
+                                        cur.good_items.cyan(),
+                                        cur.name.to_ascii_uppercase().purple(),
+                                        (" -1 ").red(),
+                                        cur.evil_items.cyan(),
+                                    );
+                                    let item_yoinked = cur.evil_items;
+                                    players[i].evil_items = item_yoinked;
+                                    break 'outer;
+                                }
+                                // yoink evil item
+                                x if x == cur.name && cur.evil_items != EvilItems::Nothing => {
+                                    println!(
+                                        "\n{}{}{:?}\n{}{}{:?}",
+                                        players[i].name.to_ascii_uppercase().purple(),
+                                        (" +1 ").green(),
+                                        cur.evil_items.cyan(),
+                                        cur.name.to_ascii_uppercase().purple(),
+                                        (" -1 ").red(),
+                                        cur.evil_items.cyan(),
+                                    );
+                                    let item_yoinked = cur.evil_items;
+                                    players[i].evil_items = item_yoinked;
+                                    break 'outer;
+                                }
+                                // yoink good item
+                                x if x == cur.name && cur.good_items != GoodItems::Nothing => {
+                                    println!(
+                                        "\n{}{}{:?}\n{}{}{:?}",
+                                        players[i].name.to_ascii_uppercase().purple(),
+                                        (" +1 ").green(),
+                                        cur.good_items.cyan(),
+                                        cur.name.to_ascii_uppercase().purple(),
+                                        (" -1 ").red(),
+                                        cur.good_items.cyan(),
+                                    );
+                                    let item_yoinked = cur.good_items;
+                                    players[i].good_items = item_yoinked;
+                                    break 'outer;
+                                }
+                                x if x == cur.name && cur.good_items == GoodItems::Nothing && cur.evil_items == EvilItems::Nothing => {
+                                    println!("{}{}", cur.name.to_ascii_uppercase().truecolor(100, 100, 100), (" has no items to yoink!").truecolor(100, 100, 100));
+                                    n += 1
+                                }
+                                _ => n += 1,
+                            }
+
+                            if n == p_num.try_into().unwrap() {
+                                println!(
+                                    "{}",
+                                    ("please choose a valid player").dimmed().italic().purple()
+                                );
+                                break 'inner;
+                            }
+                        } // inner end
+                    } /* end loop */
+
                 }
                 (_, _, _, _) => println!("{}", ("invalid command").dimmed().italic()),
             }
